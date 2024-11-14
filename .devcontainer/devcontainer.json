@@ -1,0 +1,11 @@
+{
+  "name": "Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../"
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind" // SSH keys
+  ],
+  "extensions": ["ms-python.flake8", "ms-python.python", "ms-python.debugpy"]
+}

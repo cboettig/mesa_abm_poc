@@ -1,0 +1,18 @@
+name: netlogo
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - debugpy
+  - python-dotenv
+  - scipy
+  - numpy
+  - pandas
+  - JPype1
+  - SAlib
+  - importlib_metadata
+  - pip
+  - pip:
+      - aul
+      - pynetlogo == 0.4
