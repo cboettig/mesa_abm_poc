@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python
   - debugpy
+  - ipython
   - python-dotenv
   - scipy
   - numpy
@@ -12,4 +13,5 @@ dependencies:
   - mesa
   - mesa-geo
   - solara
+  - sqlite
   - pip
