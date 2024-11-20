@@ -1,18 +1,13 @@
-name: netlogo
+name: mesa
 channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.11
+  - python
   - debugpy
   - python-dotenv
   - scipy
   - numpy
   - pandas
-  - JPype1
-  - SAlib
-  - importlib_metadata
+  - mesa
   - pip
-  - pip:
-      - aul
-      - pynetlogo == 0.4
