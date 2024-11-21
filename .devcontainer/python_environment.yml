@@ -10,8 +10,8 @@ dependencies:
   - scipy
   - numpy
   - pandas
-  - mesa
-  - mesa-geo
   - solara
   - sqlite
   - pip
+    - mesa
+    - mesa-geo
