@@ -12,6 +12,6 @@ dependencies:
   - pandas
   - solara
   - sqlite
-  - pip
-    - mesa
-    - mesa-geo
+  - pip:
+      - mesa
+      - mesa-geo
