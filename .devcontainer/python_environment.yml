@@ -12,6 +12,7 @@ dependencies:
   - pandas
   - solara
   - sqlite
+  - typing-extensions >= 4.12.0rc1
   - pip:
       - mesa
-      - mesa-geo
+      - mesa-geo >= 0.9.0a1
