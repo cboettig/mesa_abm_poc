@@ -10,7 +10,7 @@ dependencies:
   - scipy
   - numpy
   - pandas
-  - solara
+  - solara >= 1.41.0
   - sqlite
   - networkx
   - matplotlib

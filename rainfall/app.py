@@ -20,12 +20,15 @@ def cell_portrayal(cell: LakeCell) -> Tuple[float, float, float, float]:
         # return a blue color gradient based on the normalized water level
         # from the lowest water level colored as RGBA: (74, 141, 255, 1)
         # to the highest water level colored as RGBA: (0, 0, 255, 1)
-        return (
-            (1 - cell.water_level_normalized) * 74,
-            (1 - cell.water_level_normalized) * 141,
+        rgba = (
+            int((1 - cell.water_level_normalized) * 74),
+            int((1 - cell.water_level_normalized) * 141),
             255,
             1,
         )
+        print(f"Cell at {cell.pos}: {rgba}, elevation: {cell.elevation}")
+
+        return rgba
 
 
 model = Rainfall()

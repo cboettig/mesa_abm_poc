@@ -2,11 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Netlogo Simulation",
+      "name": "Solara: Launch",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/simulation/main.py",
-      "pythonPath": "/opt/conda/envs/netlogo/bin/python"
+      "cwd": "${workspaceFolder}/rainfall",
+      "module": "solara",
+      "args": ["run", "app.py"],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "pythonPath": "/opt/conda/envs/mesa/bin/python"
     }
   ]
 }
