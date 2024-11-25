@@ -66,9 +66,10 @@ class StudyArea(mg.GeoSpace):
             crs=crs,
         )
 
-        # 
+        # TODO: Use something axtually real, but for now, assume this is an
+        # inverse relationship with elevation, with a little noise
         inverse_elevation = np.array(
-            (10000 - self.raster_layer.data["elevation"]) / 10000
+            (10000 - self.raster_layer.data["elevation"] + random.random_int(0,1000)) / 10000
         )
 
         raster_layer.apply_raster(

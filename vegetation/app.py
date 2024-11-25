@@ -3,7 +3,7 @@ from typing import Tuple
 from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_leaflet
 from rainfall.model import Vegetation
-from rainfall.space import LakeCell
+from rainfall.space import VegCell
 
 model_params = {
     "rain_rate": Slider("rain rate", 500, 0, 500, 5),
@@ -14,22 +14,7 @@ model_params = {
 
 
 def cell_portrayal(cell: LakeCell) -> Tuple[float, float, float, float]:
-    if cell.water_level == 0:
-        return cell.elevation, cell.elevation, cell.elevation, 1
-    else:
-        # return a blue color gradient based on the normalized water level
-        # from the lowest water level colored as RGBA: (74, 141, 255, 1)
-        # to the highest water level colored as RGBA: (0, 0, 255, 1)
-        rgba = (
-            int((1 - cell.water_level_normalized) * 74),
-            int((1 - cell.water_level_normalized) * 141),
-            255,
-            1,
-        )
-        print(f"Cell at {cell.pos}: {rgba}, elevation: {cell.elevation}")
-
-        return rgba
-
+    return cell.elevation, cell.elevation, cell.elevation, 1
 
 model = Vegetation()
 page = SolaraViz(
