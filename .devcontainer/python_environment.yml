@@ -11,6 +11,9 @@ dependencies:
   - numpy
   - pandas
   - sqlite
+  - stackstac
+  - geopandas
+  - rioxarray
   - networkx
   - matplotlib
   - typing-extensions >= 4.12.0rc1
