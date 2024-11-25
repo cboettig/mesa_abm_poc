@@ -70,8 +70,8 @@ class Vegetation(mesa.Model):
             }
         )
 
-        self.study_area.get_elevation(crs="epsg:4326")
-        self.study_area.get_aridity(crs="epsg:4326")
+        self.study_area.get_elevation(epsg=4326)
+        self.study_area.get_aridity(epsg=4326)
 
     @property
     def contained(self):

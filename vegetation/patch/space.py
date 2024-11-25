@@ -8,7 +8,7 @@ from pystac_client import Client as PystacClient
 import planetary_computer
 # import rioxarray as rxr
 
-DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30"
+DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
 
 class VegCell(mg.Cell):
     elevation: int | None
@@ -29,27 +29,30 @@ class VegCell(mg.Cell):
 
 
 class StudyArea(mg.GeoSpace):
-    def __init__(self, bounds, crs, model):
-        super().__init__(crs=crs)
+    def __init__(self, bounds, epsg, model):
+        super().__init__(crs=f"epsg:{epsg}")
         self.bounds = bounds
         self.model = model
-        self.crs = crs
+        self.epsg = epsg
 
         self.pystac_client = PystacClient.open(
             DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
         )
 
-    def get_elevation(self, crs):
+    def get_elevation(self):
 
-        items = self.pystac_client.get_items(
-            bbox=self.bounds
-        )
+        items_generator = self.pystac_client.search(
+            collections=["cop-dem-glo-30"],
+            bbox=self.bounds,
+        ).get_items()
+
+        items = [item for item in items_generator]
 
         elevation = stackstac.stack(
             items=items,
-            assets=['elevation'],
-            resolution=30,
-            epsg=crs,
+            assets=["data"],
+            bounds=self.bounds,
+            epsg=self.epsg,
         )
 
         self.raster_layer = mg.RasterLayer(
@@ -57,7 +60,7 @@ class StudyArea(mg.GeoSpace):
             height=self.height,
             width=self.width,
             cell_cls=VegCell,
-            crs=crs,
+            crs=f"epsg:{self.epsg}",
         )
 
         self.raster_layer.apply_raster(
@@ -66,13 +69,13 @@ class StudyArea(mg.GeoSpace):
         )
         super().add_layer(self.raster_layer)
 
-    def get_aridity(self, crs):
+    def get_aridity(self):
         self.raster_layer = mg.RasterLayer(
             model=self.model,
             height=self.raster_layer.height,
             width=self.raster_layer.width,
             cell_cls=VegCell,
-            crs=crs,
+            crs=f"epsg:{self.epsg}",
         )
 
         # TODO: Use something axtually real, but for now, assume this is an
