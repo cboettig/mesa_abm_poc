@@ -8,6 +8,7 @@ from pystac_client import Client as PystacClient
 import planetary_computer
 # import rioxarray as rxr
 
+DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30"
 
 class VegCell(mg.Cell):
     elevation: int | None
@@ -35,19 +36,18 @@ class StudyArea(mg.GeoSpace):
         self.crs = crs
 
         self.pystac_client = PystacClient.open(
-            self.path, modifier=planetary_computer.sign_inplace
+            DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
         )
 
     def get_elevation(self, crs):
 
-        items = PystacClient.open(
-            self.path, modifier=planetary_computer.sign_inplace
+        items = self.pystac_client.get_items(
+            bbox=self.bounds
         )
 
         elevation = stackstac.stack(
             items=items,
             assets=['elevation'],
-            bounds=self.bounds,
             resolution=30,
             epsg=crs,
         )
