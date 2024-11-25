@@ -5,7 +5,7 @@ import mesa_geo as mg
 import numpy as np
 from shapely.geometry import Point
 
-from .space import CraterLake
+from .space import StudyArea
 
 script_directory = Path(__file__).resolve().parent
 
@@ -56,15 +56,14 @@ class RaindropAgent(mg.GeoAgent):
                 self.model.space.move_raindrop(self, lowest_pos)
 
 
-class Rainfall(mesa.Model):
-    def __init__(self, rain_rate=500, water_height=5, export_data=False, num_steps=20):
+class Vegetation(mesa.Model):
+    def __init__(self, bounds, export_data=False, num_steps=20):
         super().__init__()
-        self.rain_rate = rain_rate
-        self.water_amount = 0
+        self.bounds = bounds
         self.export_data = export_data
         self.num_steps = num_steps
 
-        self.space = CraterLake(crs="epsg:4326", water_height=water_height, model=self)
+        self.study_area = StudyArea(bounds, crs="epsg:4326", model=self)
         self.datacollector = mesa.DataCollector(
             {
                 "Total Amount of Water": "water_amount",
@@ -73,8 +72,7 @@ class Rainfall(mesa.Model):
             }
         )
 
-        data_path = script_directory / "../data/elevation.asc.gz"
-        self.space.set_elevation_layer(data_path, crs="epsg:4326")
+        self.study_area.get_elevation(crs="epsg:4326")
 
     @property
     def contained(self):
