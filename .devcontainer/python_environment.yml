@@ -7,7 +7,7 @@ dependencies:
   - debugpy
   - ipython
   - python-dotenv
-  - planetary_computer
+  - planetary-computer
   - pystac-client
   - scipy
   - numpy
