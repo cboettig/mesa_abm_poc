@@ -12,7 +12,7 @@ COPY .devcontainer/python_environment.yml .devcontainer/python_environment.yml
 RUN conda env create -f .devcontainer/python_environment.yml
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
-COPY rainfall rainfall
+COPY vegetation vegetation
 
 # Finally, keep the container running so that we can attach to it
 CMD tail -f /dev/null
