@@ -57,13 +57,13 @@ class RaindropAgent(mg.GeoAgent):
 
 
 class Vegetation(mesa.Model):
-    def __init__(self, bounds, export_data=False, num_steps=20):
+    def __init__(self, bounds, export_data=False, num_steps=20, crs="epsg:4326"):
         super().__init__()
         self.bounds = bounds
         self.export_data = export_data
         self.num_steps = num_steps
 
-        self.study_area = StudyArea(bounds, crs="epsg:4326", model=self)
+        self.study_area = StudyArea(bounds, crs=crs, model=self)
         self.datacollector = mesa.DataCollector(
             {
                 "Total Biomass": "biomass"

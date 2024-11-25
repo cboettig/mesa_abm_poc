@@ -2,8 +2,8 @@ from typing import Tuple
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_leaflet
-from vegetation.model import Vegetation
-from vegetation.space import VegCell
+from patch.model import Vegetation
+from patch.space import VegCell
 
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
@@ -15,7 +15,8 @@ def cell_portrayal(cell: VegCell) -> Tuple[float, float, float, float]:
     return cell.elevation, cell.elevation, cell.elevation, 1
 
 
-model = Vegetation()
+jotr_bounds = [-116.380920, 33.933106, -116.163940, 34.042419]
+model = Vegetation(bounds=jotr_bounds)
 page = SolaraViz(
     model,
     [

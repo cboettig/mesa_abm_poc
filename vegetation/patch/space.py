@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import gzip
-
 import mesa
 import mesa_geo as mg
 import numpy as np
 import stackstac
-import rioxarray as rxr
+# import rioxarray as rxr
+
 
 class VegCell(mg.Cell):
     elevation: int | None
@@ -76,7 +75,6 @@ class StudyArea(mg.GeoSpace):
             attr_name="water_level",
         )
         super().add_layer(self.raster_layer)
-
 
     @property
     def raster_layer(self):
