@@ -66,9 +66,7 @@ class Vegetation(mesa.Model):
         self.study_area = StudyArea(bounds, crs="epsg:4326", model=self)
         self.datacollector = mesa.DataCollector(
             {
-                "Total Amount of Water": "water_amount",
-                "Total Contained": "contained",
-                "Total Outflow": "outflow",
+                "Total Biomass": "biomass"
             }
         )
 

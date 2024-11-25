@@ -5,7 +5,7 @@
       "name": "Solara: Launch",
       "type": "debugpy",
       "request": "launch",
-      "cwd": "${workspaceFolder}/rainfall",
+      "cwd": "${workspaceFolder}/vegetation",
       "module": "solara",
       "args": ["run", "app.py"],
       "console": "integratedTerminal",

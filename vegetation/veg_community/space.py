@@ -41,7 +41,6 @@ class StudyArea(mg.GeoSpace):
             cell_cls=VegCell,
             crs=crs,
         )
-        raster_layer.crs = crs
 
         elevation = stackstac.stack(
             urls=['https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30'],
@@ -51,14 +50,14 @@ class StudyArea(mg.GeoSpace):
             epsg=crs,
         )
 
-        raster_layer.apply_raster(
+        self.raster_layer.apply_raster(
             data=elevation,
             attr_name="elevation",
         )
-        super().add_layer(raster_layer)
+        super().add_layer(self.raster_layer)
 
     def get_aridity(self, crs):
-        raster_layer = mg.RasterLayer(
+        self.raster_layer = mg.RasterLayer(
             model=self.model,
             height=self.raster_layer.height,
             width=self.raster_layer.width,
@@ -72,10 +71,11 @@ class StudyArea(mg.GeoSpace):
             (10000 - self.raster_layer.data["elevation"] + random.random_int(0,1000)) / 10000
         )
 
-        raster_layer.apply_raster(
+        self.raster_layer.apply_raster(
             data=inverse_elevation,
             attr_name="water_level",
         )
+        super().add_layer(self.raster_layer)
 
 
     @property
