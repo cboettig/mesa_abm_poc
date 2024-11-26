@@ -10,6 +10,7 @@ import planetary_computer
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
 
+
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
