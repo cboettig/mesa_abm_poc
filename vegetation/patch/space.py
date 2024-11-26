@@ -56,11 +56,26 @@ class StudyArea(mg.GeoSpace):
             epsg=self.epsg,
         )
 
+        # TODO: It seems weird that we have duplicate time dimension, it seems like
+        # stackstac should automatically ignore the `id` dimension which is just
+        # is contains the cog name, which doesn't really matter to us. This check
+        # ensures that there aren't overlap issues where we introduce some kind of
+        # bias, but this seems like a code smell to me
+        n_not_nan = np.unique(elevation.count(dim='time'))
+        if not n_not_nan == [1]:
+            raise ValueError(f"Some cells have no, or duplicate, elevation data. Unique number of non-nan values: {n_not_nan}")
+
+        # Collapse along time dimension, ignoring COG source
+        elevation = elevation.median(dim='time')
+
+        elevation_height, elevation_width = elevation.shape
+
         self.raster_layer = mg.RasterLayer(
             model=self.model,
-            height=self.height,
-            width=self.width,
-            cell_cls=VegCell,
+            height=elevation_height,
+            width=elevation_width,
+            # cell_cls=VegCell,
+            total_bounds=self.bounds,
             crs=f"epsg:{self.epsg}",
         )
 
@@ -94,6 +109,13 @@ class StudyArea(mg.GeoSpace):
     @property
     def raster_layer(self):
         return self.layers[0]
+
+    @raster_layer.setter
+    def raster_layer(self, value):
+        if self.layers:
+            self.layers[0] = value
+        else:
+            self.layers.append(value)
 
     def is_at_boundary(self, row_idx, col_idx):
         return (
