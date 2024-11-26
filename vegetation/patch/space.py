@@ -68,7 +68,7 @@ class StudyArea(mg.GeoSpace):
         # Collapse along time dimension, ignoring COG source
         elevation = elevation.median(dim='time')
 
-        elevation_height, elevation_width, __elevation_bands = elevation.shape
+        __elevation_bands, elevation_height, elevation_width = elevation.shape
 
         self.raster_layer = mg.RasterLayer(
             model=self.model,
