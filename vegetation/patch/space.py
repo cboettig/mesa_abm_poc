@@ -6,6 +6,7 @@ import numpy as np
 import stackstac
 from pystac_client import Client as PystacClient
 import planetary_computer
+import random
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
@@ -45,7 +46,7 @@ class StudyArea(mg.GeoSpace):
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
             bbox=self.bounds,
-        ).get_items()
+        ).items()
 
         items = [item for item in items_generator]
 
@@ -86,23 +87,19 @@ class StudyArea(mg.GeoSpace):
         super().add_layer(self.raster_layer)
 
     def get_aridity(self):
-        self.raster_layer = mg.RasterLayer(
-            model=self.model,
-            height=self.raster_layer.height,
-            width=self.raster_layer.width,
-            cell_cls=VegCell,
-            crs=f"epsg:{self.epsg}",
-        )
 
         # TODO: Use something axtually real, but for now, assume this is an
-        # inverse relationship with elevation, with a little noise
+        # positive relationship with elevation, with a little noise. This is 
+        # smelly because it relies on elevation being set first, but it's
+        # a placeholder for now
+        elevation_array = self.raster_layer.get_raster('elevation')
         inverse_elevation = np.array(
-            (10000 - self.raster_layer.data["elevation"] + random.random_int(0,1000)) / 10000
+            elevation_array + random.uniform(-3000, 3000)
         )
 
         self.raster_layer.apply_raster(
             data=inverse_elevation,
-            attr_name="water_level",
+            attr_name="aridity",
         )
         super().add_layer(self.raster_layer)
 

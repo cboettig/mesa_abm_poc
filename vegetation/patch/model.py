@@ -63,15 +63,15 @@ class Vegetation(mesa.Model):
         self.export_data = export_data
         self.num_steps = num_steps
 
-        self.study_area = StudyArea(bounds, epsg=epsg, model=self)
+        self.space = StudyArea(bounds, epsg=epsg, model=self)
         self.datacollector = mesa.DataCollector(
             {
                 "Total Biomass": "biomass"
             }
         )
 
-        self.study_area.get_elevation()
-        self.study_area.get_aridity()
+        self.space.get_elevation()
+        self.space.get_aridity()
 
     @property
     def contained(self):
