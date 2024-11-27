@@ -3,3 +3,4 @@
 __pycache__/
 *.pyc
 tst*.*
+vegetation/profile_output.prof

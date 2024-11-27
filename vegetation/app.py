@@ -1,3 +1,5 @@
+import cProfile
+import pstats
 from typing import Tuple
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
@@ -33,4 +35,6 @@ page = SolaraViz(
     model_params=model_params,
 )
 
-page  # noqa
+if __name__ == "__main__":
+    # Run your Solara app
+    page  # noqa
