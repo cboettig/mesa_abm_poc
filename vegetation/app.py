@@ -18,7 +18,8 @@ model_params = {
 
 
 def cell_portrayal(cell: VegCell) -> Tuple[float, float, float, float]:
-    return cell.elevation, cell.elevation, cell.elevation, 1
+    debug_normalized_elevation = int((cell.elevation / 5000) * 255)
+    return debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
 
 
 model = Vegetation(bounds=TST_JOTR_BOUNDS)

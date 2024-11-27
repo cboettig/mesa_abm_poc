@@ -6,8 +6,8 @@
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}/vegetation",
-      "module": "cProfile",
-      "args": ["-o", "profile_output.prof", "-m", "solara", "run", "app.py"],
+      "module": "solara",
+      "args": ["run", "app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
       "pythonPath": "/opt/conda/envs/mesa/bin/python"
