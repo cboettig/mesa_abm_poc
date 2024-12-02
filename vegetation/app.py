@@ -7,8 +7,17 @@ from mesa_geo.visualization import make_geospace_leaflet
 from patch.model import Vegetation
 from patch.space import VegCell
 
-# BIG_TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
-TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
+# Very big bounds for western JOTR
+# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
+
+# Medium bounds for testing
+# TST_JOTR_BOUNDS = [-116.367188, 33.939942, -116.201019, 34.061193]
+
+# Small-ish bounds
+TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
+
+# Very small bounds for testing
+# TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
 
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
