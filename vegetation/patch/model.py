@@ -18,11 +18,11 @@ from config.paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, geometry, model, pos, age=0):
+    def __init__(self, model, geometry, crs, pos, age=0):
         super().__init__(
-            model,
+            model=model,
             geometry=geometry,
-            crs=model.space.crs,
+            crs=crs,
         )
         self.pos = pos
         self.age = age
