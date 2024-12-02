@@ -7,10 +7,12 @@ import stackstac
 from pystac_client import Client as PystacClient
 import planetary_computer
 import random
+import os
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-
+LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_hash}.tif"
+SAVE_LOCAL_STAC_CACHE = True
 
 class VegCell(mg.Cell):
     elevation: int | None
@@ -43,6 +45,57 @@ class StudyArea(mg.GeoSpace):
 
     def get_elevation(self):
 
+        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(band_name="elevation", bounds_hash=hash(self.bounds))
+
+        if os.path.exists(local_elevation_path):
+            elevation = mg.RasterLayer.from_file(
+                raster_file=local_elevation_path,
+                model=self.model,
+                cell_cls=VegCell,
+                attr_name="elevation"
+            )
+        else:
+            elevation = self.get_elevation_from_stac()
+
+            __elevation_bands, elevation_height, elevation_width = elevation.shape
+
+            self.raster_layer = mg.RasterLayer(
+                model=self.model,
+                height=elevation_height,
+                width=elevation_width,
+                # cell_cls=VegCell,
+                total_bounds=self.bounds,
+                crs=f"epsg:{self.epsg}",
+            )
+
+            self.raster_layer.apply_raster(
+                data=elevation,
+                attr_name="elevation",
+            )
+
+            if SAVE_LOCAL_STAC_CACHE:
+                self.raster_layer.to_file(local_elevation_path)
+
+        super().add_layer(self.raster_layer)
+
+    def get_aridity(self):
+
+        # TODO: Use something axtually real, but for now, assume this is an
+        # positive relationship with elevation, with a little noise. This is 
+        # smelly because it relies on elevation being set first, but it's
+        # a placeholder for now
+        elevation_array = self.raster_layer.get_raster('elevation')
+        inverse_elevation = np.array(
+            elevation_array + random.uniform(-3000, 3000)
+        )
+
+        self.raster_layer.apply_raster(
+            data=inverse_elevation,
+            attr_name="aridity",
+        )
+        super().add_layer(self.raster_layer)
+
+    def get_elevation_from_stac(self):
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
             bbox=self.bounds,
@@ -69,39 +122,7 @@ class StudyArea(mg.GeoSpace):
         # Collapse along time dimension, ignoring COG source
         elevation = elevation.median(dim='time')
 
-        __elevation_bands, elevation_height, elevation_width = elevation.shape
-
-        self.raster_layer = mg.RasterLayer(
-            model=self.model,
-            height=elevation_height,
-            width=elevation_width,
-            # cell_cls=VegCell,
-            total_bounds=self.bounds,
-            crs=f"epsg:{self.epsg}",
-        )
-
-        self.raster_layer.apply_raster(
-            data=elevation,
-            attr_name="elevation",
-        )
-        super().add_layer(self.raster_layer)
-
-    def get_aridity(self):
-
-        # TODO: Use something axtually real, but for now, assume this is an
-        # positive relationship with elevation, with a little noise. This is 
-        # smelly because it relies on elevation being set first, but it's
-        # a placeholder for now
-        elevation_array = self.raster_layer.get_raster('elevation')
-        inverse_elevation = np.array(
-            elevation_array + random.uniform(-3000, 3000)
-        )
-
-        self.raster_layer.apply_raster(
-            data=inverse_elevation,
-            attr_name="aridity",
-        )
-        super().add_layer(self.raster_layer)
+        return elevation
 
     @property
     def raster_layer(self):
