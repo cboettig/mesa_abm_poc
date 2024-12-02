@@ -96,7 +96,13 @@ class Vegetation(mesa.Model):
         self.space = StudyArea(bounds, epsg=epsg, model=self)
         self.datacollector = mesa.DataCollector(
             {
-                "Avg Age": "avg_age"
+                "Avg Age": "avg_age",
+                "Num Agents": "n_agents",
+                "Num Seeds": "n_seeds",
+                "Num Seedlings": "n_seedlings",
+                "Num Juveniles": "n_juveniles",
+                "Num Adults": "n_adults",
+                "Num Breeding": "n_breeding"
             }
         )
 
