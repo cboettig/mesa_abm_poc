@@ -3,9 +3,10 @@ import mesa_geo as mg
 import numpy as np
 from shapely.geometry import Point
 import random
+import json
 
-from vegetation.space import StudyArea
-from vegetation.config.transitions import (
+from patch.space import StudyArea
+from config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
     JOTR_ADULT_AGE,
@@ -13,14 +14,14 @@ from vegetation.config.transitions import (
     get_jotr_emergence_rate,
     get_jotr_survival_rate
 )
-from vegetation.config.paths import INITIAL_AGENTS_PATH
+from config.paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, pos, age=0):
+    def __init__(self, geometry, model, pos, age=0):
         super().__init__(
             model,
-            geometry=None,
+            geometry=geometry,
             crs=model.space.crs,
         )
         self.pos = pos
@@ -94,10 +95,13 @@ class Vegetation(mesa.Model):
 
         self.space = StudyArea(bounds, epsg=epsg, model=self)
 
+        with open(INITIAL_AGENTS_PATH, 'r') as f:
+            initial_agents_geojson = json.loads(f.read())
+
         agents = mg.AgentCreator(
             JoshuaTreeAgent,
             model=self
-        ).from_GeoJSON(INITIAL_AGENTS_PATH)
+        ).from_GeoJSON(initial_agents_geojson)
         self.space.add_agents(agents)
 
         self.datacollector = mesa.DataCollector(
