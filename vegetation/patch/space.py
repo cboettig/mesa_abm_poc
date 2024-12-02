@@ -8,10 +8,11 @@ from pystac_client import Client as PystacClient
 import planetary_computer
 import random
 import os
+import hashlib
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
-LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_hash}.tif"
+LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
 SAVE_LOCAL_STAC_CACHE = True
 
 class VegCell(mg.Cell):
@@ -39,13 +40,21 @@ class StudyArea(mg.GeoSpace):
         self.model = model
         self.epsg = epsg
 
+        # For local development, we want to cache the STAC data so we don't
+        # have to download it every time. This hash is used to uniquely identify
+        # the bounds of the study area, so that we can grab if we already have it
+        self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
+
         self.pystac_client = PystacClient.open(
             DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
         )
 
     def get_elevation(self):
 
-        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(band_name="elevation", bounds_hash=hash(self.bounds))
+        local_elevation_path = LOCAL_STAC_CACHE_FSTRING.format(
+            band_name="elevation",
+            bounds_md5=self.bounds_md5,
+        )
 
         if os.path.exists(local_elevation_path):
             elevation = mg.RasterLayer.from_file(
