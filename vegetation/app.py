@@ -38,7 +38,15 @@ page = SolaraViz(
     [
         make_geospace_leaflet(cell_portrayal, zoom=11),
         make_plot_component(
-            ["Total Biomass"]
+            [
+                "Mean Age",
+                'N Agents',
+                'N Seeds',
+                'N Seedlings',
+                'N Juveniles',
+                'N Adults',
+                'N Breeding'
+            ],
         ),
     ],
     name="Veg Model",

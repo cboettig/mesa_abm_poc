@@ -6,12 +6,18 @@ import numpy as np
 from shapely.geometry import Point
 
 from .space import StudyArea
-
+from ..config.transitions import (
+    JOTR_JUVENILE_AGE,
+    JOTR_REPRODUCTIVE_AGE,
+    JOTR_SEED_DISPERSAL_DISTANCE,
+    get_jotr_emergence_rate,
+    get_jotr_survival_rate
+)
 script_directory = Path(__file__).resolve().parent
 
 
-class RaindropAgent(mg.GeoAgent):
-    def __init__(self, model, pos):
+class JoshuaTreeAgent(mg.GeoAgent):
+    def __init__(self, model, pos, age=0):
         super().__init__(
             model,
             geometry=None,
@@ -19,6 +25,18 @@ class RaindropAgent(mg.GeoAgent):
         )
         self.pos = pos
         self.is_at_boundary = False
+        self.age = age
+
+        if age == 0:
+            self.life_stage = 'seed'
+        elif age > 1 and age <= JOTR_JUVENILE_AGE:
+            self.life_stage = 'seedling'
+        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
+            self.life_stage = 'juvenile'
+        elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
+            self.life_stage = 'adult'
+        else:
+            self.life_stage = 'breeding'
 
     @property
     def pos(self):
@@ -43,18 +61,30 @@ class RaindropAgent(mg.GeoAgent):
             self.geometry = None
 
     def step(self):
-        if self.is_at_boundary:
-            self.remove()
-        else:
-            lowest_pos = min(
-                self.model.space.raster_layer.get_neighboring_cells(
-                    pos=self.pos, moore=True, include_center=True
-                ),
-                key=lambda cell: cell.elevation + cell.water_level,
-            ).pos
-            if lowest_pos != self.pos:
-                self.model.space.move_raindrop(self, lowest_pos)
+        survival_rate = get_jotr_survival_rate(
+            self.life_stage,
+            self.model.space.raster_layer.get_raster("aridity")[self.indices],
+            0 #Assume no nurse plants for now
+        )
 
+        # Check survival
+        if random.random() < survival_rate:
+            self.age += 1
+        else:
+            if self.life_stage in ['juvenile', 'adult', 'breeding']:
+                self.life_stage = 'dead' # Keep as a potential nurse plant
+            else:
+                self.remove() # If seed or seedling, remove from model entirely
+
+        # Increment age
+        self.age += 1
+
+        # Disperse
+        if self.life_stage == 'breeding':
+            self.disperse_seeds()
+
+    def disperse_seeds(self, dispersal_distance = JOTR_SEED_DISPERSAL_DISTANCE):
+        pass
 
 class Vegetation(mesa.Model):
     def __init__(self, bounds, export_data=False, num_steps=20, epsg=4326):
@@ -66,7 +96,7 @@ class Vegetation(mesa.Model):
         self.space = StudyArea(bounds, epsg=epsg, model=self)
         self.datacollector = mesa.DataCollector(
             {
-                "Total Biomass": "biomass"
+                "Avg Age": "avg_age"
             }
         )
 
@@ -74,41 +104,29 @@ class Vegetation(mesa.Model):
         self.space.get_aridity()
 
     @property
-    def contained(self):
-        return self.water_amount - self.outflow
+    def mean_age(self):
+        return np.mean([agent.age for agent in self.agents])
 
     @property
-    def outflow(self):
-        return self.space.outflow
+    def n_agents(self):
+        return len(self.agents)
 
-    def export_water_level_to_file(self):
-        self.space.raster_layer.to_file(
-            raster_file="data/water_level.asc",
-            attr_name="water_level",
-            driver="AAIGrid",
-        )
+    @property
+    def n_seeds(self):
+        return len([agent for agent in self.agents if agent.life_stage == 'seed'])
 
-    def step(self):
-        for _ in range(self.rain_rate):
-            random_x = np.random.randint(0, self.space.raster_layer.width)
-            random_y = np.random.randint(0, self.space.raster_layer.height)
-            raindrop = RaindropAgent(
-                model=self,
-                pos=(random_x, random_y),
-            )
-            self.space.add_raindrop(raindrop)
-            self.water_amount += 1
+    @property
+    def n_seedlings(self):
+        return len([agent for agent in self.agents if agent.life_stage == 'seedling'])
 
-        self.agents.shuffle_do("step")
-        self.datacollector.collect(self)
+    @property
+    def n_juveniles(self):
+        return len([agent for agent in self.agents if agent.life_stage == 'juvenile'])
 
-        current_water_level = self.space.raster_layer.get_raster("water_level")
-        self.space.raster_layer.apply_raster(
-            current_water_level / current_water_level.max(),
-            "water_level_normalized",
-        )
+    @property
+    def n_adults(self):
+        return len([agent for agent in self.agents if agent.life_stage == 'adult'])
 
-        if self.steps >= self.num_steps:
-            self.running = False
-        if not self.running and self.export_data:
-            self.export_water_level_to_file()
+    @property
+    def n_breeding(self):
+        return len([agent for agent in self.agents if agent.life_stage == 'breeding'])
