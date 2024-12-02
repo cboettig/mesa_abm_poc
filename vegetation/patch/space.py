@@ -9,6 +9,8 @@ import planetary_computer
 import random
 import os
 import hashlib
+import logging
+import time
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
@@ -57,18 +59,30 @@ class StudyArea(mg.GeoSpace):
         )
 
         if os.path.exists(local_elevation_path):
-            elevation = mg.RasterLayer.from_file(
-                raster_file=local_elevation_path,
-                model=self.model,
-                cell_cls=VegCell,
-                attr_name="elevation"
-            )
+
+            logging.info(f"Loading elevation from local cache: {local_elevation_path}")
+
+            try:
+                elevation_layer = mg.RasterLayer.from_file(
+                    raster_file=local_elevation_path,
+                    model=self.model,
+                    cell_cls=VegCell,
+                    attr_name="elevation"
+                )
+            except Exception as e:
+                logging.warning(f"Failed to load elevation from local cache ({local_elevation_path}): {e}")
+                raise e
+
         else:
+
+            logging.info("No local cache found, downloading elevation from STAC")
+            time_at_start = time.time()
+
             elevation = self.get_elevation_from_stac()
 
             __elevation_bands, elevation_height, elevation_width = elevation.shape
 
-            self.raster_layer = mg.RasterLayer(
+            elevation_layer = mg.RasterLayer(
                 model=self.model,
                 height=elevation_height,
                 width=elevation_width,
@@ -77,15 +91,18 @@ class StudyArea(mg.GeoSpace):
                 crs=f"epsg:{self.epsg}",
             )
 
-            self.raster_layer.apply_raster(
+            elevation_layer.apply_raster(
                 data=elevation,
                 attr_name="elevation",
             )
 
             if SAVE_LOCAL_STAC_CACHE:
-                self.raster_layer.to_file(local_elevation_path)
+                logging.info(f"Saving elevation to local cache: {local_elevation_path}")
+                elevation_layer.to_file(local_elevation_path)
 
-        super().add_layer(self.raster_layer)
+            logging.info(f"Downloaded elevation in {time.time() - time_at_start} seconds")
+
+        super().add_layer(elevation_layer)
 
     def get_aridity(self):
 
