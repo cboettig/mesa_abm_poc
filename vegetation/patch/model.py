@@ -18,13 +18,17 @@ from config.paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, geometry, crs, pos, age=0):
+    def __init__(self, model, geometry, crs, age=0):
         super().__init__(
             model=model,
             geometry=geometry,
             crs=crs,
         )
-        self.pos = pos
+
+        # TODO: Shouldn't GeoAgent have some more native pos abstraction? I am
+        # passing geometry after all...
+        pos = (int(geometry.x), int(geometry.y))
+        self._pos = pos
         self.age = age
 
         if age == 0:
