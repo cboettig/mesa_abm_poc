@@ -1,19 +1,19 @@
-from pathlib import Path
-
 import mesa
 import mesa_geo as mg
 import numpy as np
 from shapely.geometry import Point
+import random
 
-from .space import StudyArea
-from ..config.transitions import (
+from vegetation.space import StudyArea
+from vegetation.config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
+    JOTR_ADULT_AGE,
     JOTR_SEED_DISPERSAL_DISTANCE,
     get_jotr_emergence_rate,
     get_jotr_survival_rate
 )
-script_directory = Path(__file__).resolve().parent
+from vegetation.config.paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
@@ -24,7 +24,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
             crs=model.space.crs,
         )
         self.pos = pos
-        self.is_at_boundary = False
         self.age = age
 
         if age == 0:
@@ -64,7 +63,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         survival_rate = get_jotr_survival_rate(
             self.life_stage,
             self.model.space.raster_layer.get_raster("aridity")[self.indices],
-            0 #Assume no nurse plants for now
+            0  # Assume no nurse plants for now
         )
 
         # Check survival
@@ -94,6 +93,13 @@ class Vegetation(mesa.Model):
         self.num_steps = num_steps
 
         self.space = StudyArea(bounds, epsg=epsg, model=self)
+
+        agents = mg.AgentCreator(
+            JoshuaTreeAgent,
+            model=self
+        ).from_GeoJSON(INITIAL_AGENTS_PATH)
+        self.space.add_agents(agents)
+
         self.datacollector = mesa.DataCollector(
             {
                 "Avg Age": "avg_age",
