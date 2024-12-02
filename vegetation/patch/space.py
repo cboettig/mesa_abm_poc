@@ -60,7 +60,7 @@ class StudyArea(mg.GeoSpace):
 
         if os.path.exists(local_elevation_path):
 
-            logging.info(f"Loading elevation from local cache: {local_elevation_path}")
+            print(f"Loading elevation from local cache: {local_elevation_path}")
 
             try:
                 elevation_layer = mg.RasterLayer.from_file(
@@ -75,7 +75,7 @@ class StudyArea(mg.GeoSpace):
 
         else:
 
-            logging.info("No local cache found, downloading elevation from STAC")
+            print("No local cache found, downloading elevation from STAC")
             time_at_start = time.time()
 
             elevation = self.get_elevation_from_stac()
@@ -97,10 +97,10 @@ class StudyArea(mg.GeoSpace):
             )
 
             if SAVE_LOCAL_STAC_CACHE:
-                logging.info(f"Saving elevation to local cache: {local_elevation_path}")
+                print(f"Saving elevation to local cache: {local_elevation_path}")
                 elevation_layer.to_file(local_elevation_path)
 
-            logging.info(f"Downloaded elevation in {time.time() - time_at_start} seconds")
+            print(f"Downloaded elevation in {time.time() - time_at_start} seconds")
 
         super().add_layer(elevation_layer)
 
@@ -122,13 +122,17 @@ class StudyArea(mg.GeoSpace):
         super().add_layer(self.raster_layer)
 
     def get_elevation_from_stac(self):
+
+        print("Collecting STAC Items")
         items_generator = self.pystac_client.search(
             collections=["cop-dem-glo-30"],
             bbox=self.bounds,
         ).items()
 
         items = [item for item in items_generator]
+        print(f"Found {len(items)} items")
 
+        print("Stacking STAC Items")
         elevation = stackstac.stack(
             items=items,
             assets=["data"],
@@ -141,11 +145,14 @@ class StudyArea(mg.GeoSpace):
         # is contains the cog name, which doesn't really matter to us. This check
         # ensures that there aren't overlap issues where we introduce some kind of
         # bias, but this seems like a code smell to me
+
+        print("Checking for duplicate elevation data")
         n_not_nan = np.unique(elevation.count(dim='time'))
         if not n_not_nan == [1]:
             raise ValueError(f"Some cells have no, or duplicate, elevation data. Unique number of non-nan values: {n_not_nan}")
 
         # Collapse along time dimension, ignoring COG source
+        print("Collapsing time dimension")
         elevation = elevation.median(dim='time')
 
         return elevation
