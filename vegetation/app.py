@@ -4,7 +4,7 @@ from typing import Tuple
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_leaflet
-from patch.model import Vegetation
+from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
 
 # Very big bounds for western JOTR
@@ -26,16 +26,26 @@ model_params = {
 }
 
 
-def cell_portrayal(cell: VegCell) -> Tuple[float, float, float, float]:
-    debug_normalized_elevation = int((cell.elevation / 5000) * 255)
-    return debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
+def cell_portrayal(agent):
+    if isinstance(agent, VegCell):
+        debug_normalized_elevation = int((agent.elevation / 5000) * 255)
+        rgba = debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
+        return rgba
+    if isinstance(agent, JoshuaTreeAgent):
+        portrayal = {}
+        portrayal["shape"] = "circle"
+        portrayal["r"] = 2
+        portrayal["color"] = "green"
+        return portrayal
 
 
 model = Vegetation(bounds=TST_JOTR_BOUNDS)
 
+
 page = SolaraViz(
     model,
-    [
+    name="Veg Model",
+    components=[
         make_geospace_leaflet(cell_portrayal, zoom=11),
         make_plot_component(
             [
@@ -49,7 +59,6 @@ page = SolaraViz(
             ],
         ),
     ],
-    name="Veg Model",
     model_params=model_params,
 )
 

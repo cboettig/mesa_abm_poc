@@ -110,13 +110,13 @@ class Vegetation(mesa.Model):
 
         self.datacollector = mesa.DataCollector(
             {
-                "Avg Age": "avg_age",
-                "Num Agents": "n_agents",
-                "Num Seeds": "n_seeds",
-                "Num Seedlings": "n_seedlings",
-                "Num Juveniles": "n_juveniles",
-                "Num Adults": "n_adults",
-                "Num Breeding": "n_breeding"
+                "Mean Age": "mean_age",
+                "N Agents": "n_agents", 
+                "N Seeds": "n_seeds",
+                "N Seedlings": "n_seedlings",
+                "N Juveniles": "n_juveniles",
+                "N Adults": "n_adults",
+                "N Breeding": "n_breeding"
             }
         )
 
