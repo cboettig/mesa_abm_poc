@@ -47,9 +47,11 @@ class StudyArea(mg.GeoSpace):
         # the bounds of the study area, so that we can grab if we already have it
         self.bounds_md5 = hashlib.md5(str(bounds).encode()).hexdigest()
 
-        self.pystac_client = PystacClient.open(
-            DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
-        )
+        self.pystac_client = None
+        if not LOCAL_STAC_CACHE_FSTRING:
+            self.pystac_client = PystacClient.open(
+                DEM_STAC_PATH, modifier=planetary_computer.sign_inplace
+            )
 
     def get_elevation(self):
 
