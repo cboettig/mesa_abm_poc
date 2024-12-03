@@ -27,7 +27,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # TODO: Shouldn't GeoAgent have some more native pos abstraction? I am
         # passing geometry after all...
-        pos = (int(geometry.x), int(geometry.y))
+        pos = (np.float64(geometry.x), np.float64(geometry.y))
         self._pos = pos
         self.age = age
 
@@ -65,11 +65,29 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.geometry = None
 
     def step(self):
-        survival_rate = get_jotr_survival_rate(
-            self.life_stage,
-            self.model.space.raster_layer.get_raster("aridity")[self.indices],
-            0  # Assume no nurse plants for now
+        
+        # TODO: When we create the agent, we need to know its own indices relative
+        # to the rasterlayer. This seems like very foundational mesa / mesa-geo stuff,
+        # which should be handled by the GeoAgent or GeoBase, but the examples are 
+        # inconsistenr
+        VALID_INDICES = (11,12)
+
+        intersecting_cell = self.model.space.raster_layer.iter_neighbors(
+            VALID_INDICES,
+            moore=False,
+            include_center=True, 
+            radius=0
         )
+        if self.life_stage == 'seed':
+            survival_rate = get_jotr_emergence_rate(
+                intersecting_cell.aridity
+            )
+        else:
+            survival_rate = get_jotr_survival_rate(
+                self.life_stage,
+                intersecting_cell.aridity,
+                0  # Assume no nurse plants for now
+            )
 
         # Check survival
         if random.random() < survival_rate:
@@ -97,7 +115,6 @@ class Vegetation(mesa.Model):
         self.export_data = export_data
         self.num_steps = num_steps
 
-        self.schedule = mesa.time.RandomActivationByType(self)
         self.space = StudyArea(bounds, epsg=epsg, model=self)
 
         with open(INITIAL_AGENTS_PATH, 'r') as f:
@@ -108,9 +125,6 @@ class Vegetation(mesa.Model):
             model=self
         ).from_GeoJSON(initial_agents_geojson)
         self.space.add_agents(agents)
-
-        for agent in agents:
-            self.schedule.add(agent)
 
         self.datacollector = mesa.DataCollector(
             {
@@ -156,4 +170,4 @@ class Vegetation(mesa.Model):
         return len([agent for agent in self.agents if agent.life_stage == 'breeding'])
 
     def step(self):
-        self.schedule.step()
+        self.agents.shuffle_do("step")
