@@ -78,7 +78,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             if self.life_stage in ['juvenile', 'adult', 'breeding']:
                 self.life_stage = 'dead' # Keep as a potential nurse plant
             else:
-                self.remove() # If seed or seedling, remove from model entirely
+                self.remove()  # If seed or seedling, remove from model entirely
 
         # Increment age
         self.age += 1
@@ -97,6 +97,7 @@ class Vegetation(mesa.Model):
         self.export_data = export_data
         self.num_steps = num_steps
 
+        self.schedule = mesa.time.RandomActivationByType(self)
         self.space = StudyArea(bounds, epsg=epsg, model=self)
 
         with open(INITIAL_AGENTS_PATH, 'r') as f:
@@ -107,6 +108,9 @@ class Vegetation(mesa.Model):
             model=self
         ).from_GeoJSON(initial_agents_geojson)
         self.space.add_agents(agents)
+
+        for agent in agents:
+            self.schedule.add(agent)
 
         self.datacollector = mesa.DataCollector(
             {
@@ -150,3 +154,6 @@ class Vegetation(mesa.Model):
     @property
     def n_breeding(self):
         return len([agent for agent in self.agents if agent.life_stage == 'breeding'])
+
+    def step(self):
+        self.schedule.step()
