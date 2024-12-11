@@ -25,11 +25,21 @@ class JoshuaTreeAgent(mg.GeoAgent):
             crs=crs,
         )
 
-        # TODO: Shouldn't GeoAgent have some more native pos abstraction? I am
-        # passing geometry after all...
+        self.age = age
+
         pos = (np.float64(geometry.x), np.float64(geometry.y))
         self._pos = pos
-        self.age = age
+
+        # TODO: When we create the agent, we need to know its own indices relative
+        # to the rasterlayer. This seems like very foundational mesa / mesa-geo stuff,
+        # which should be handled by the GeoAgent or GeoBase, but the examples are 
+        # inconsistent. For now, invert the affine transformation to get the indices,
+        # converting from geographic (lat, lon) to raster (col, row) coordinates
+
+        self.float_indices = ~self.model.space.raster_layer._transform * \
+            (np.float64(geometry.x), np.float64(geometry.y))
+
+        self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
 
         if age == 0:
             self.life_stage = 'seed'
@@ -42,42 +52,19 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             self.life_stage = 'breeding'
 
-    @property
-    def pos(self):
-        return self._pos
-
-    @property
-    def indices(self):
-        return self._indices
-
-    @pos.setter
-    def pos(self, pos):
-        self._pos = pos
-        if pos is not None:
-            x, y = self.pos
-            row_idx = self.model.space.raster_layer.height - y - 1
-            col_idx = x
-            self._indices = row_idx, col_idx
-            self.geometry = Point(
-                self.model.space.raster_layer.transform * self.indices
-            )
-        else:
-            self.geometry = None
-
     def step(self):
-        
-        # TODO: When we create the agent, we need to know its own indices relative
-        # to the rasterlayer. This seems like very foundational mesa / mesa-geo stuff,
-        # which should be handled by the GeoAgent or GeoBase, but the examples are 
-        # inconsistenr
-        VALID_INDICES = (11,12)
 
-        intersecting_cell = self.model.space.raster_layer.iter_neighbors(
-            VALID_INDICES,
+        intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
+            self.indices,
             moore=False,
-            include_center=True, 
+            include_center=True,
             radius=0
         )
+
+        intersecting_cell = next(intersecting_cell_filter)
+        if not intersecting_cell:
+            raise ValueError('No intersecting cell found')
+
         if self.life_stage == 'seed':
             survival_rate = get_jotr_emergence_rate(
                 intersecting_cell.aridity
@@ -94,9 +81,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.age += 1
         else:
             if self.life_stage in ['juvenile', 'adult', 'breeding']:
-                self.life_stage = 'dead' # Keep as a potential nurse plant
+                self.life_stage = 'dead'  # Keep as a potential nurse plant
             else:
-                self.remove()  # If seed or seedling, remove from model entirely
+                self.remove()  # If seed or seedling, remove from model
 
         # Increment age
         self.age += 1
@@ -116,6 +103,9 @@ class Vegetation(mesa.Model):
         self.num_steps = num_steps
 
         self.space = StudyArea(bounds, epsg=epsg, model=self)
+
+        self.space.get_elevation()
+        self.space.get_aridity()
 
         with open(INITIAL_AGENTS_PATH, 'r') as f:
             initial_agents_geojson = json.loads(f.read())
@@ -137,9 +127,6 @@ class Vegetation(mesa.Model):
                 "N Breeding": "n_breeding"
             }
         )
-
-        self.space.get_elevation()
-        self.space.get_aridity()
 
     @property
     def mean_age(self):
