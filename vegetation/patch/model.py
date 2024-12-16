@@ -18,7 +18,7 @@ from config.paths import INITIAL_AGENTS_PATH
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, geometry, crs, age=0):
+    def __init__(self, model, geometry, crs, age=None):
         super().__init__(
             model=model,
             geometry=geometry,
@@ -41,16 +41,13 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
 
-        if age == 0:
-            self.life_stage = 'seed'
-        elif age > 1 and age <= JOTR_JUVENILE_AGE:
-            self.life_stage = 'seedling'
-        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
-            self.life_stage = 'juvenile'
-        elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
-            self.life_stage = 'adult'
-        else:
-            self.life_stage = 'breeding'
+        # TODO: Figure out how to set the life stage on init
+        # Seems natural to set the life stage on init, but in 
+        # see lines 181-190 in mesa_geo/geoagent.py, the agents are instantiated before the
+        # GeoAgent gets the attributes within the geojson, so we need to call _update_life_stage
+        # after init when the age is known to the agent
+
+        # self._update_life_stage()
 
     def step(self):
 
@@ -91,10 +88,25 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Increment age
         self.age += 1
+        self._update_life_stage()
 
         # Disperse
         if self.life_stage == 'breeding':
             self.disperse_seeds()
+
+    def _update_life_stage(self):
+        age = self.age if self.age else 0
+        if age == 0:
+            life_stage = 'seed'
+        elif age > 1 and age <= JOTR_JUVENILE_AGE:
+            life_stage = 'seedling'
+        elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
+            life_stage = 'juvenile'
+        elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
+            life_stage = 'adult'
+        else:
+            life_stage = 'breeding'
+        self.life_stage = life_stage
 
     def disperse_seeds(self, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
         pass
@@ -118,57 +130,63 @@ class Vegetation(mesa.Model):
             JoshuaTreeAgent,
             model=self
         ).from_GeoJSON(initial_agents_geojson)
+
+        # TODO: Since .from_GeoJSON() sets attributes after init, we need to call
+        # _update_life_stage after init, but before we add to the grid
+        self.agents.select(agent_type=JoshuaTreeAgent).do('_update_life_stage')
+
         self.space.add_agents(agents)
 
         self.datacollector = mesa.DataCollector(
             {
-                "Mean Age": "mean_age",
-                "N Agents": "n_agents",
-                "N Seeds": "n_seeds",
-                "N Seedlings": "n_seedlings",
-                "N Juveniles": "n_juveniles",
-                "N Adults": "n_adults",
-                "N Breeding": "n_breeding"
+                "Mean Age": self.mean_age,
+                "N Agents": self.n_agents,
+                "N Seeds": self.n_seeds,
+                "N Seedlings": self.n_seedlings,
+                "N Juveniles": self.n_juveniles,
+                "N Adults": self.n_adults,
+                "N Breeding": self.n_breeding
             }
         )
 
     @property
     def mean_age(self):
-        return np.mean([agent.age for agent in self.agents])
+        return self.agents.select(agent_type=JoshuaTreeAgent) \
+            .agg('age', np.mean)
 
     @property
     def n_agents(self):
-        return len(self.agents)
+        return len(self.agents.select(agent_type=JoshuaTreeAgent))
 
     @property
     def n_seeds(self):
-        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['seed']
+        return count_dict['seed'] if 'seed' in count_dict else 0
 
     @property
     def n_seedlings(self):
-        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['seedling']
+        return count_dict['seedling'] if 'seedling' in count_dict else 0
 
     @property
     def n_juveniles(self):
-        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['juvenile']
+        return count_dict['juvenile'] if 'juvenile' in count_dict else 0
 
     @property
     def n_adults(self):
-        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['adult']
+        return count_dict['adult'] if 'adult' in count_dict else 0
 
     @property
     def n_breeding(self):
-        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['breeding']
+        return count_dict['breeding'] if 'breeding' in count_dict else 0
 
     def step(self):
         self.agents.shuffle_do("step")
