@@ -114,7 +114,7 @@ class StudyArea(mg.GeoSpace):
         # a placeholder for now
         elevation_array = self.raster_layer.get_raster('elevation')
         inverse_elevation = np.array(
-            elevation_array + random.uniform(-3000, 3000)
+            elevation_array + random.uniform(-300, 300)
         )
 
         self.raster_layer.apply_raster(
