@@ -76,10 +76,14 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 0  # Assume no nurse plants for now
             )
 
+        print(f"Agent life stage {self.life_stage}, survival rate: {survival_rate}")
+
         # Check survival
         if random.random() < survival_rate:
+            print('Survived!')
             self.age += 1
         else:
+            print('Died!')
             if self.life_stage in ['juvenile', 'adult', 'breeding']:
                 self.life_stage = 'dead'  # Keep as a potential nurse plant
             else:
@@ -92,7 +96,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         if self.life_stage == 'breeding':
             self.disperse_seeds()
 
-    def disperse_seeds(self, dispersal_distance = JOTR_SEED_DISPERSAL_DISTANCE):
+    def disperse_seeds(self, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
         pass
 
 class Vegetation(mesa.Model):
@@ -119,7 +123,7 @@ class Vegetation(mesa.Model):
         self.datacollector = mesa.DataCollector(
             {
                 "Mean Age": "mean_age",
-                "N Agents": "n_agents", 
+                "N Agents": "n_agents",
                 "N Seeds": "n_seeds",
                 "N Seedlings": "n_seedlings",
                 "N Juveniles": "n_juveniles",
@@ -138,23 +142,33 @@ class Vegetation(mesa.Model):
 
     @property
     def n_seeds(self):
-        return len([agent for agent in self.agents if agent.life_stage == 'seed'])
+        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+            .groupby('life_stage').count()
+        return count_dict['seed']
 
     @property
     def n_seedlings(self):
-        return len([agent for agent in self.agents if agent.life_stage == 'seedling'])
+        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+            .groupby('life_stage').count()
+        return count_dict['seedling']
 
     @property
     def n_juveniles(self):
-        return len([agent for agent in self.agents if agent.life_stage == 'juvenile'])
+        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+            .groupby('life_stage').count()
+        return count_dict['juvenile']
 
     @property
     def n_adults(self):
-        return len([agent for agent in self.agents if agent.life_stage == 'adult'])
+        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+            .groupby('life_stage').count()
+        return count_dict['adult']
 
     @property
     def n_breeding(self):
-        return len([agent for agent in self.agents if agent.life_stage == 'breeding'])
+        count_dict = self.model.agents.select(agent_type=JoshuaTreeAgent) \
+            .groupby('life_stage').count()
+        return count_dict['breeding']
 
     def step(self):
         self.agents.shuffle_do("step")
