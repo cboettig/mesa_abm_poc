@@ -75,16 +75,20 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         print(f"Agent life stage {self.life_stage}, survival rate: {survival_rate}")
 
+        dice_roll_zero_to_one = random.random()
+
         # Check survival
-        if random.random() < survival_rate:
-            print('Survived!')
-            self.age += 1
+        if survival_rate < dice_roll_zero_to_one:
+            outcome_str = 'survived.'
+
         else:
-            print('Died!')
+            outcome_str = 'died!'
             if self.life_stage in ['juvenile', 'adult', 'breeding']:
                 self.life_stage = 'dead'  # Keep as a potential nurse plant
             else:
                 self.remove()  # If seed or seedling, remove from model
+
+        print(f"Agent {self.unique_id} {outcome_str} (dice roll {dice_roll_zero_to_one} with a surival probability of {survival_rate})")
 
         # Increment age
         self.age += 1
@@ -110,6 +114,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def disperse_seeds(self, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
         pass
+
 
 class Vegetation(mesa.Model):
     def __init__(self, bounds, export_data=False, num_steps=20, epsg=4326):
