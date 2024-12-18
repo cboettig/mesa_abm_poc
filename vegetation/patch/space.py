@@ -11,6 +11,7 @@ import os
 import hashlib
 import logging
 import time
+# from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
@@ -30,9 +31,26 @@ class VegCell(mg.Cell):
         super().__init__(model, pos, indices)
         self.elevation = None
         self.aridity = None
+        self.joshua_tree_occupancy = 0
+
+
+        ## TODO: Improve patch level tracking of JOTR agents
+        ## For now, this is somewhat of a hack to track which agents are present within a patch cell
+        ## This is something I suspect is an offshoot of my question posed to the mesa-geo team
+        ## (https://github.com/projectmesa/mesa-geo/issues/267), where the cell does not have a geometry
+        ## and thus I can't use the various geometry based intersection methods to find agents. My guess 
+        ## is that this will either not work or be very slow, but itll get us started
+        self.joshua_tree_agents = []
 
     def step(self):
         pass
+
+    def update_occupancy(self, jotr_agent):
+        if jotr_agent.life_stage and jotr_agent.life_stage != 'dead':
+            self.joshua_tree_agents.append(jotr_agent)
+            if jotr_agent not in self.joshua_tree_agents:
+                self.model.joshua_tree_agents.append(jotr_agent.unique_id)
+                self.joshua_tree_occupancy += 1
 
 
 class StudyArea(mg.GeoSpace):

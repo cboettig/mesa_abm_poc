@@ -26,6 +26,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         )
 
         self.age = age
+        self.life_stage = None
 
         pos = (np.float64(geometry.x), np.float64(geometry.y))
         self._pos = pos
@@ -50,6 +51,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
         # self._update_life_stage()
 
     def step(self):
+
+        if self.life_stage == 'dead':
+            return
 
         intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
             self.indices,
@@ -94,11 +98,18 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.age += 1
         self._update_life_stage()
 
+        # Update underlying patch
+        intersecting_cell.update_occupancy(self)
+
         # Disperse
         if self.life_stage == 'breeding':
             self.disperse_seeds()
 
     def _update_life_stage(self):
+
+        if self.life_stage == 'dead':
+            return
+
         age = self.age if self.age else 0
         if age == 0:
             life_stage = 'seed'
@@ -141,57 +152,42 @@ class Vegetation(mesa.Model):
         self.agents.select(agent_type=JoshuaTreeAgent).do('_update_life_stage')
 
         self.space.add_agents(agents)
+        self.update_metrics()
 
         self.datacollector = mesa.DataCollector(
             {
-                "Mean Age": self.mean_age,
-                "N Agents": self.n_agents,
-                "N Seeds": self.n_seeds,
-                "N Seedlings": self.n_seedlings,
-                "N Juveniles": self.n_juveniles,
-                "N Adults": self.n_adults,
-                "N Breeding": self.n_breeding
+                "Mean Age": 'mean_age',
+                "N Agents": 'n_agents',
+                "N Seeds": 'n_seeds',
+                "N Seedlings": 'n_seedlings',
+                "N Juveniles": 'n_juveniles',
+                "N Adults": 'n_adults',
+                "N Breeding": 'n_breeding'
             }
         )
 
-    @property
-    def mean_age(self):
-        return self.agents.select(agent_type=JoshuaTreeAgent) \
+    # @property
+    def update_metrics(self):
+        # Mean age
+        mean_age = self.agents.select(agent_type=JoshuaTreeAgent) \
             .agg('age', np.mean)
+        self.mean_age = mean_age
 
-    @property
-    def n_agents(self):
-        return len(self.agents.select(agent_type=JoshuaTreeAgent))
+        # Number of agents (JoshuaTreeAgent)
+        n_agents = len(self.agents.select(agent_type=JoshuaTreeAgent))
+        self.n_agents = n_agents
 
-    @property
-    def n_seeds(self):
+        # Number of agents by life stage
         count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
             .groupby('life_stage').count()
-        return count_dict['seed'] if 'seed' in count_dict else 0
-
-    @property
-    def n_seedlings(self):
-        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
-            .groupby('life_stage').count()
-        return count_dict['seedling'] if 'seedling' in count_dict else 0
-
-    @property
-    def n_juveniles(self):
-        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
-            .groupby('life_stage').count()
-        return count_dict['juvenile'] if 'juvenile' in count_dict else 0
-
-    @property
-    def n_adults(self):
-        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
-            .groupby('life_stage').count()
-        return count_dict['adult'] if 'adult' in count_dict else 0
-
-    @property
-    def n_breeding(self):
-        count_dict = self.agents.select(agent_type=JoshuaTreeAgent) \
-            .groupby('life_stage').count()
-        return count_dict['breeding'] if 'breeding' in count_dict else 0
+        self.n_seeds = count_dict.get('seed', 0)
+        self.n_seedlings = count_dict.get('seedling', 0)
+        self.n_juveniles = count_dict.get('juvenile', 0)
+        self.n_adults = count_dict.get('adult', 0)
+        self.n_breeding = count_dict.get('breeding', 0)
 
     def step(self):
         self.agents.shuffle_do("step")
+        self.update_metrics()
+
+        self.datacollector.collect(self)
