@@ -35,6 +35,7 @@ class VegCell(mg.Cell):
 
 
         ## TODO: Improve patch level tracking of JOTR agents
+        #Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/1
         ## For now, this is somewhat of a hack to track which agents are present within a patch cell
         ## This is something I suspect is an offshoot of my question posed to the mesa-geo team
         ## (https://github.com/projectmesa/mesa-geo/issues/267), where the cell does not have a geometry
