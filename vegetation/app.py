@@ -22,7 +22,7 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
     "export_data": False,
-    "bounds": TST_JOTR_BOUNDS
+    "bounds": TST_JOTR_BOUNDS,
 }
 
 
@@ -32,7 +32,12 @@ def cell_portrayal(agent):
             rgba = 0, 255, 0, 1
         else:
             debug_normalized_elevation = int((agent.elevation / 5000) * 255)
-            rgba = debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
+            rgba = (
+                debug_normalized_elevation,
+                debug_normalized_elevation,
+                debug_normalized_elevation,
+                1,
+            )
         return rgba
     if isinstance(agent, JoshuaTreeAgent):
 
@@ -56,12 +61,12 @@ page = SolaraViz(
         make_plot_component(
             [
                 "Mean Age",
-                'N Agents',
-                'N Seeds',
-                'N Seedlings',
-                'N Juveniles',
-                'N Adults',
-                'N Breeding'
+                "N Agents",
+                "N Seeds",
+                "N Seedlings",
+                "N Juveniles",
+                "N Adults",
+                "N Breeding",
             ],
         ),
     ],

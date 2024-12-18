@@ -11,12 +11,14 @@ import os
 import hashlib
 import logging
 import time
+
 # from patch.model import JoshuaTreeAgent
 # import rioxarray as rxr
 
 DEM_STAC_PATH = "https://planetarycomputer.microsoft.com/api/stac/v1/"
 LOCAL_STAC_CACHE_FSTRING = "/local_dev_data/{band_name}_{bounds_md5}.tif"
 SAVE_LOCAL_STAC_CACHE = True
+
 
 class VegCell(mg.Cell):
     elevation: int | None
@@ -38,7 +40,7 @@ class VegCell(mg.Cell):
         # For now, this is somewhat of a hack to track which agents are present within a patch cell
         # This is something I suspect is an offshoot of my question posed to the mesa-geo team
         # (https://github.com/projectmesa/mesa-geo/issues/267), where the cell does not have a geometry
-        # and thus I can't use the various geometry based intersection methods to find agents. My guess 
+        # and thus I can't use the various geometry based intersection methods to find agents. My guess
         # is that this will either not work or be very slow, but itll get us started
         self.jotr_agents = []
 
@@ -46,7 +48,11 @@ class VegCell(mg.Cell):
         pass
 
     def update_occupancy(self, jotr_agent):
-        if jotr_agent.life_stage and jotr_agent.life_stage != 'dead' and jotr_agent not in self.jotr_agents:
+        if (
+            jotr_agent.life_stage
+            and jotr_agent.life_stage != "dead"
+            and jotr_agent not in self.jotr_agents
+        ):
             self.jotr_agents.append(jotr_agent)
             self.jotr_occupancy += 1
 
@@ -85,10 +91,12 @@ class StudyArea(mg.GeoSpace):
                     raster_file=local_elevation_path,
                     model=self.model,
                     cell_cls=VegCell,
-                    attr_name="elevation"
+                    attr_name="elevation",
                 )
             except Exception as e:
-                logging.warning(f"Failed to load elevation from local cache ({local_elevation_path}): {e}")
+                logging.warning(
+                    f"Failed to load elevation from local cache ({local_elevation_path}): {e}"
+                )
                 raise e
 
         else:
@@ -125,13 +133,11 @@ class StudyArea(mg.GeoSpace):
     def get_aridity(self):
 
         # TODO: Use something axtually real, but for now, assume this is an
-        # positive relationship with elevation, with a little noise. This is 
+        # positive relationship with elevation, with a little noise. This is
         # smelly because it relies on elevation being set first, but it's
         # a placeholder for now
-        elevation_array = self.raster_layer.get_raster('elevation')
-        inverse_elevation = np.array(
-            elevation_array + random.uniform(-300, 300)
-        )
+        elevation_array = self.raster_layer.get_raster("elevation")
+        inverse_elevation = np.array(elevation_array + random.uniform(-300, 300))
 
         self.raster_layer.apply_raster(
             data=inverse_elevation,
@@ -165,13 +171,15 @@ class StudyArea(mg.GeoSpace):
         # bias, but this seems like a code smell to me
 
         print("Checking for duplicate elevation data")
-        n_not_nan = np.unique(elevation.count(dim='time'))
+        n_not_nan = np.unique(elevation.count(dim="time"))
         if not n_not_nan == [1]:
-            raise ValueError(f"Some cells have no, or duplicate, elevation data. Unique number of non-nan values: {n_not_nan}")
+            raise ValueError(
+                f"Some cells have no, or duplicate, elevation data. Unique number of non-nan values: {n_not_nan}"
+            )
 
         # Collapse along time dimension, ignoring COG source
         print("Collapsing time dimension")
-        elevation = elevation.median(dim='time')
+        elevation = elevation.median(dim="time")
 
         return elevation
 
