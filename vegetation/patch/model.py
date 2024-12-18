@@ -106,6 +106,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.disperse_seeds()
 
     def _update_life_stage(self):
+        
+        # TODO: Test issue
+        # Hello
 
         if self.life_stage == 'dead':
             return
