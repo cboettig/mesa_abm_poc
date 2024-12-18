@@ -107,10 +107,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def _update_life_stage(self):
 
-        # TODO: Test issue
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/2
-        # Hello
-
         if self.life_stage == 'dead':
             return
 

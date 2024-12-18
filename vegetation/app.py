@@ -28,14 +28,20 @@ model_params = {
 
 def cell_portrayal(agent):
     if isinstance(agent, VegCell):
-        debug_normalized_elevation = int((agent.elevation / 5000) * 255)
-        rgba = debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
+        if agent.jotr_occupancy > 0:
+            rgba = 0, 255, 0, 1
+        else:
+            debug_normalized_elevation = int((agent.elevation / 5000) * 255)
+            rgba = debug_normalized_elevation, debug_normalized_elevation, debug_normalized_elevation, 1
         return rgba
     if isinstance(agent, JoshuaTreeAgent):
+
+        # For now, we don't want to show individual agents on the map
         portrayal = {}
-        portrayal["shape"] = "circle"
-        portrayal["r"] = 2
-        portrayal["color"] = "green"
+        # portrayal["shape"] = "circle"
+        # portrayal["r"] = 2
+        # portrayal["color"] = "green"
+        portrayal["opacity"] = 0.0
         return portrayal
 
 
@@ -46,7 +52,7 @@ page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        make_geospace_leaflet(cell_portrayal, zoom=11),
+        make_geospace_leaflet(cell_portrayal, zoom=14),
         make_plot_component(
             [
                 "Mean Age",
