@@ -106,7 +106,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             self.disperse_seeds()
 
     def _update_life_stage(self):
-        
+
         # TODO: Test issue
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/2
         # Hello
