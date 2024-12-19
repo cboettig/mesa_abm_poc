@@ -32,6 +32,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self._pos = pos
 
         # TODO: When we create the agent, we need to know its own indices relative
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/5
         # to the rasterlayer. This seems like very foundational mesa / mesa-geo stuff,
         # which should be handled by the GeoAgent or GeoBase, but the examples are
         # inconsistent. For now, invert the affine transformation to get the indices,
@@ -45,6 +47,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
 
         # TODO: Figure out how to set the life stage on init
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/3
         # Seems natural to set the life stage on init, but in
         # see lines 181-190 in mesa_geo/geoagent.py, the agents are instantiated before the
         # GeoAgent gets the attributes within the geojson, so we need to call _update_life_stage
