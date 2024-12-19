@@ -148,7 +148,8 @@ class Vegetation(mesa.Model):
             initial_agents_geojson
         )
 
-        # TODO: Since .from_GeoJSON() sets attributes after init, we need to call
+        # TODO: Find a way to update life stage on init
+        # Since .from_GeoJSON() sets attributes after init, we call
         # _update_life_stage after init, but before we add to the grid
         self.agents.select(agent_type=JoshuaTreeAgent).do("_update_life_stage")
 
