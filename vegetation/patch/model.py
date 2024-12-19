@@ -4,6 +4,7 @@ import numpy as np
 from shapely.geometry import Point
 import random
 import json
+import scipy.stats.poisson as poisson
 
 from patch.space import StudyArea
 from config.transitions import (
@@ -13,6 +14,7 @@ from config.transitions import (
     JOTR_SEED_DISPERSAL_DISTANCE,
     get_jotr_emergence_rate,
     get_jotr_survival_rate,
+    get_jotr_breeding_poisson_lambda,
 )
 from config.paths import INITIAL_AGENTS_PATH
 
@@ -56,17 +58,19 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def step(self):
 
+        # Check if agent is dead - if yes, skip
         if self.life_stage == "dead":
             return
 
+        # Find the underlying cell - it must exist, else raise an error
         intersecting_cell_filter = self.model.space.raster_layer.iter_neighbors(
             self.indices, moore=False, include_center=True, radius=0
         )
-
         intersecting_cell = next(intersecting_cell_filter)
         if not intersecting_cell:
             raise ValueError("No intersecting cell found")
 
+        # If seed, get emergence rate, if not, get survival rate
         if self.life_stage == "seed":
             survival_rate = get_jotr_emergence_rate(intersecting_cell.aridity)
         else:
@@ -76,23 +80,19 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 0,  # Assume no nurse plants for now
             )
 
-        print(f"Agent life stage {self.life_stage}, survival rate: {survival_rate}")
-
+        # Roll the dice to see if the agent survives
         dice_roll_zero_to_one = random.random()
 
-        # Check survival
-        if survival_rate < dice_roll_zero_to_one:
+        # Check survival, comparing dice roll to survival rate
+        if dice_roll_zero_to_one < survival_rate:
             outcome_str = "survived."
 
         else:
             outcome_str = "died!"
-            if self.life_stage in ["juvenile", "adult", "breeding"]:
-                self.life_stage = "dead"  # Keep as a potential nurse plant
-            else:
-                self.remove()  # If seed or seedling, remove from model
+            self.life_stage = "dead"
 
         print(
-            f"Agent {self.unique_id} {outcome_str} (dice roll {dice_roll_zero_to_one} with a surival probability of {survival_rate})"
+            f"Agent {self.unique_id} {outcome_str} (dice roll {dice_roll_zero_to_one} with a survival probability of {survival_rate})"
         )
 
         # Increment age
@@ -104,7 +104,11 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Disperse
         if self.life_stage == "breeding":
-            self.disperse_seeds()
+            jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
+                intersecting_cell.aridity
+            )
+            n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
+            self.disperse_seeds(n_seeds)
 
     def _update_life_stage(self):
 
@@ -124,8 +128,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
             life_stage = "breeding"
         self.life_stage = life_stage
 
-    def disperse_seeds(self, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
-        pass
+    def disperse_seeds(self, n_seeds, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
+        for seed in n_seeds:
+            pass
 
 
 class Vegetation(mesa.Model):

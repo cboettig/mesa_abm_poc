@@ -37,27 +37,27 @@ def cell_portrayal(agent):
         if len(agent.jotr_agents) > 0:
             only_dead = all([a.life_stage == "dead" for a in agent.jotr_agents])
             if only_dead:
-                rgba = 100, 0, 0, 1
+                return 100, 0, 0, 1
 
-            has_adults = any(
-                [a.life_stage in ["adult", "breeding"] for a in agent.jotr_agents]
-            )
+            has_breeders = any([a.life_stage == "breeding" for a in agent.jotr_agents])
+            if has_breeders:
+                return 0, 255, 0, 1
+
+            has_adults = any([a.life_stage == "adult" for a in agent.jotr_agents])
             if has_adults:
-                rgba = 0, 255, 0, 1
+                return 0, 200, 0, 1
 
             has_juveniles = any([a.life_stage == "juvenile" for a in agent.jotr_agents])
             if has_juveniles:
-                rgba = 0, 175, 0, 1
+                return 0, 150, 0, 1
 
             has_seedlings = any([a.life_stage == "seedling" for a in agent.jotr_agents])
             if has_seedlings:
-                rgba = 0, 100, 0, 1
+                return 0, 100, 0, 1
 
             has_seeds = any([a.life_stage == "seed" for a in agent.jotr_agents])
             if has_seeds:
-                rgba = 0, 50, 0, 1
-
-            return rgba
+                return 0, 50, 0, 1
 
         else:
 
