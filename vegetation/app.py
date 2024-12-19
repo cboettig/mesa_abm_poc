@@ -27,10 +27,40 @@ model_params = {
 
 
 def cell_portrayal(agent):
+
     if isinstance(agent, VegCell):
-        if agent.jotr_occupancy > 0:
-            rgba = 0, 255, 0, 1
+
+        # This is very primitive, but essentially we color based on the furthest
+        # life stage of any Joshua Tree agent in the cell. If there are no agents,
+        # we color based on elevation.
+
+        if len(agent.jotr_agents) > 0:
+            only_dead = all([a.life_stage == "dead" for a in agent.jotr_agents])
+            if only_dead:
+                rgba = 100, 0, 0, 1
+
+            has_adults = any(
+                [a.life_stage in ["adult", "breeding"] for a in agent.jotr_agents]
+            )
+            if has_adults:
+                rgba = 0, 255, 0, 1
+
+            has_juveniles = any([a.life_stage == "juvenile" for a in agent.jotr_agents])
+            if has_juveniles:
+                rgba = 0, 175, 0, 1
+
+            has_seedlings = any([a.life_stage == "seedling" for a in agent.jotr_agents])
+            if has_seedlings:
+                rgba = 0, 100, 0, 1
+
+            has_seeds = any([a.life_stage == "seed" for a in agent.jotr_agents])
+            if has_seeds:
+                rgba = 0, 50, 0, 1
+
+            return rgba
+
         else:
+
             debug_normalized_elevation = int((agent.elevation / 5000) * 255)
             rgba = (
                 debug_normalized_elevation,
@@ -39,14 +69,18 @@ def cell_portrayal(agent):
                 1,
             )
         return rgba
+
     if isinstance(agent, JoshuaTreeAgent):
 
-        # For now, we don't want to show individual agents on the map
+        # For now, we don't want to show individual agents on the map,
+        # but we get an error if we don't return something
+
         portrayal = {}
         # portrayal["shape"] = "circle"
         # portrayal["r"] = 2
         # portrayal["color"] = "green"
         portrayal["opacity"] = 0.0
+
         return portrayal
 
 

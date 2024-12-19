@@ -33,7 +33,6 @@ class VegCell(mg.Cell):
         super().__init__(model, pos, indices)
         self.elevation = None
         self.aridity = None
-        self.jotr_occupancy = 0
 
         # TODO: Improve patch level tracking of JOTR agents
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/1
@@ -48,13 +47,8 @@ class VegCell(mg.Cell):
         pass
 
     def update_occupancy(self, jotr_agent):
-        if (
-            jotr_agent.life_stage
-            and jotr_agent.life_stage != "dead"
-            and jotr_agent not in self.jotr_agents
-        ):
+        if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:
             self.jotr_agents.append(jotr_agent)
-            self.jotr_occupancy += 1
 
 
 class StudyArea(mg.GeoSpace):
