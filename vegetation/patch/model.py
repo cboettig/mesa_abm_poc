@@ -33,7 +33,6 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # TODO: When we create the agent, we need to know its own indices relative
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/5
         # to the rasterlayer. This seems like very foundational mesa / mesa-geo stuff,
         # which should be handled by the GeoAgent or GeoBase, but the examples are
         # inconsistent. For now, invert the affine transformation to get the indices,

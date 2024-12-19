@@ -128,7 +128,6 @@ class StudyArea(mg.GeoSpace):
 
         # TODO: Use something axtually real, but for now, assume this is an
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/8
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/7
         # positive relationship with elevation, with a little noise. This is
         # smelly because it relies on elevation being set first, but it's
         # a placeholder for now
