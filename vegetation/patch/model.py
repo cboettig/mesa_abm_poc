@@ -129,7 +129,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         self.life_stage = life_stage
 
     def disperse_seeds(self, n_seeds, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
-        for seed in n_seeds:
+        for seed in np.arange(0, n_seeds):
             pass
 
 
