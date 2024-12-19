@@ -21,5 +21,5 @@ dependencies:
   - typing-extensions >= 4.12.0rc1
   - pip:
       - mesa >= 3.0.3
-      - mesa-geo >= 0.9.0a0
-      - solara >= 1.41.0
+      - mesa-geo == 0.9.0a0
+      - solara == 1.42.0
