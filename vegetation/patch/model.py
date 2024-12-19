@@ -4,7 +4,7 @@ import numpy as np
 from shapely.geometry import Point
 import random
 import json
-import scipy.stats.poisson as poisson
+from scipy.stats import poisson
 
 from patch.space import StudyArea
 from config.transitions import (

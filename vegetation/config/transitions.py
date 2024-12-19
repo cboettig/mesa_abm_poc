@@ -32,4 +32,4 @@ def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
 
 
 def get_jotr_breeding_poisson_lambda(aridity):
-    return 0.1 + (aridity / 1000)
+    return 10 - (aridity / 1000)
