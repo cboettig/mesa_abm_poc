@@ -3,7 +3,7 @@ import pstats
 from typing import Tuple
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from mesa_geo.visualization import make_geospace_leaflet
+from mesa_geo.visualization.components.geospace_leaflet import make_geospace_leaflet
 from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
 
