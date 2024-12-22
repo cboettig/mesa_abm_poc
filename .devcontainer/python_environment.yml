@@ -22,5 +22,5 @@ dependencies:
   - sqlite
   - pip:
       - mesa
-      - mesa-geo
+      - mesa-geo==0.9.0
       - solara
