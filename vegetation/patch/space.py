@@ -108,7 +108,8 @@ class StudyArea(mg.GeoSpace):
                 width=elevation_width,
                 # cell_cls=VegCell,
                 total_bounds=self.bounds,
-                crs=f"epsg:{self.epsg}",
+                # crs=f"epsg:{self.epsg}",
+                crs=self.crs,
             )
 
             elevation_layer.apply_raster(

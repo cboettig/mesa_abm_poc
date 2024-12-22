@@ -10,7 +10,7 @@
       "args": ["run", "app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
-      "pythonPath": "/opt/conda/envs/mesa/bin/python"
+      "pythonPath": "/opt/conda/bin/python"
     }
   ]
 }
