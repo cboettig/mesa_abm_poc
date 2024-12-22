@@ -5,6 +5,7 @@ from shapely.geometry import Point
 import random
 import json
 from scipy.stats import poisson
+from pyproj import Transformer
 
 from patch.space import StudyArea
 from config.transitions import (
@@ -17,6 +18,8 @@ from config.transitions import (
     get_jotr_breeding_poisson_lambda,
 )
 from config.paths import INITIAL_AGENTS_PATH
+
+JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
@@ -128,9 +131,59 @@ class JoshuaTreeAgent(mg.GeoAgent):
             life_stage = "breeding"
         self.life_stage = life_stage
 
-    def disperse_seeds(self, n_seeds, dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE):
-        for seed in np.arange(0, n_seeds):
-            pass
+    def disperse_seeds(
+        self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
+    ):
+
+        if self.life_stage != "breeding":
+            raise ValueError(
+                f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
+            )
+
+        print(f"Agent {self.unique_id} is dispersing {n_seeds} seeds")
+
+        # TODO: Use the best projection for valid seed dispersal
+        # For now this uses UTM zone 11N, cuz it's in meters and
+        # works, but it may not be best for accurate linear distance?
+
+        # Create transformers to disperse seeds accurately in meters
+        wgs84_to_utm = Transformer.from_crs("EPSG:4326", JOTR_UTM_PROJ, always_xy=True)
+        utm_to_wgs84 = Transformer.from_crs(JOTR_UTM_PROJ, "EPSG:4326", always_xy=True)
+
+        # Transform parent location to UTM
+        x_utm, y_utm = wgs84_to_utm.transform(self.geometry.x, self.geometry.y)
+
+        for __seed_idx in np.arange(0, n_seeds):
+            # Random direction in radians
+            angle = random.uniform(0, 2 * np.pi)
+
+            # Random distance in meters, up to dispersal distance
+            dispersal_distance = random.uniform(0, max_dispersal_distance)
+
+            # Calculate new seed location in UTM
+            seed_x_utm = x_utm + dispersal_distance * np.cos(angle)
+            seed_y_utm = y_utm + dispersal_distance * np.sin(angle)
+
+            # Transform back to WGS84
+            seed_x_wgs84, seed_y_wgs84 = utm_to_wgs84.transform(seed_x_utm, seed_y_utm)
+
+            # Create new seed agent
+            seed_agent = JoshuaTreeAgent(
+                model=self.model,
+                geometry=Point(seed_x_wgs84, seed_y_wgs84),
+                crs=self.crs,
+                age=0,
+            )
+            seed_agent._update_life_stage()
+
+            # Add the seed agent to the model
+            self.model.space.add_agents(seed_agent)
+            delta_x_index = self.indices[0] - seed_agent.indices[0]
+            delta_y_index = self.indices[1] - seed_agent.indices[1]
+
+            print(
+                f"Agent {self.unique_id} dispersed a seed to {seed_agent._pos} (delta index: {delta_x_index}, {delta_y_index})"
+            )
 
 
 class Vegetation(mesa.Model):

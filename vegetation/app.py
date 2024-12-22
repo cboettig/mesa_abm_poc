@@ -19,6 +19,12 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 # Very small bounds for testing
 # TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
 
+# TODO: Add conda lock file to prevent version issues
+
+# TODO: Push working build to artifact registry, or dockerhub, or something, while
+# we wait on mesa-geo PR
+
+
 model_params = {
     "num_steps": Slider("total number of steps", 20, 1, 100, 1),
     "export_data": False,
@@ -76,9 +82,9 @@ def cell_portrayal(agent):
         # but we get an error if we don't return something
 
         portrayal = {}
-        # portrayal["shape"] = "circle"
-        # portrayal["r"] = 2
-        # portrayal["color"] = "green"
+        portrayal["shape"] = "circle"
+        portrayal["r"] = 2
+        portrayal["color"] = "green"
         portrayal["opacity"] = 0.0
 
         return portrayal
