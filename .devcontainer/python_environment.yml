@@ -12,13 +12,14 @@ dependencies:
   - scipy
   - numpy
   - pandas
-  - libsqlite==3.31.1
   - stackstac
   - geopandas
   - rioxarray
   - networkx
   - matplotlib
   - typing-extensions >= 4.12.0rc1
+  - libsqlite
+  - sqlite
   - pip:
       - mesa
       - mesa-geo

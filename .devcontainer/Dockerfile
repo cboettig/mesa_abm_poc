@@ -7,9 +7,12 @@ COPY .devcontainer/scripts .devcontainer/scripts
 # Install git and ssh (note that you could also put this in a .sh for better readability)
 RUN .devcontainer/scripts/install_git_and_ssh.sh
 
-# Then, copy the .devcontainer contents of the repo into the image - note we do this later so that we can avoid re-installing sys dependencies if the python deps change
-COPY .devcontainer/python_environment.yml .devcontainer/python_environment.yml
-RUN conda env create -f .devcontainer/python_environment.yml
+# Install conda-lock in the base env
+RUN conda install -c conda-forge conda-lock
+
+# Use the pre-built conda-lock environment to install the dependencies
+COPY .devcontainer/python_environment_lock.yml .devcontainer/python_environment_lock.yml
+RUN conda-lock install --name mesa .devcontainer/python_environment_lock.yml
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
 COPY vegetation vegetation
