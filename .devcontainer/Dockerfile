@@ -12,7 +12,7 @@ RUN conda install -c conda-forge conda-lock
 
 # Use the pre-built conda-lock environment to install the dependencies
 COPY .devcontainer/python_environment_lock.yml .devcontainer/python_environment_lock.yml
-RUN conda-lock install .devcontainer/python_environment_lock.yml
+RUN conda-lock install -n base .devcontainer/python_environment_lock.yml
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
 COPY vegetation vegetation
