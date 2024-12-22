@@ -143,6 +143,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         print(f"Agent {self.unique_id} is dispersing {n_seeds} seeds")
 
         # TODO: Use the best projection for valid seed dispersal
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/12
         # For now this uses UTM zone 11N, cuz it's in meters and
         # works, but it may not be best for accurate linear distance?
 

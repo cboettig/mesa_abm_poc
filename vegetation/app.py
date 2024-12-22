@@ -20,8 +20,10 @@ TST_JOTR_BOUNDS = [-116.326332, 33.975823, -116.289768, 34.004147]
 # TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.360920, 33.935106]
 
 # TODO: Add conda lock file to prevent version issues
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/11
 
 # TODO: Push working build to artifact registry, or dockerhub, or something, while
+# Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/10
 # we wait on mesa-geo PR
 
 
