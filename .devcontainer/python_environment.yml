@@ -12,7 +12,7 @@ dependencies:
   - scipy
   - numpy
   - pandas
-  - sqlite
+  - libsqlite==3.31.1
   - stackstac
   - geopandas
   - rioxarray
