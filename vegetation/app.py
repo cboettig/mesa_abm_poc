@@ -6,6 +6,7 @@ from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization.components.geospace_leaflet import make_geospace_leaflet
 from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
+from config.stages import LIFE_STAGE_RGB_VIZ_MAP
 
 # Very big bounds for western JOTR
 # TST_JOTR_BOUNDS = [-116.380920, 33.933106, -116.163940, 34.042419]
@@ -42,30 +43,37 @@ def cell_portrayal(agent):
         # life stage of any Joshua Tree agent in the cell. If there are no agents,
         # we color based on elevation.
 
-        if len(agent.jotr_agents) > 0:
-            only_dead = all([a.life_stage == "dead" for a in agent.jotr_agents])
-            if only_dead:
-                return 100, 0, 0, 1
+        patch_life_stages = [agent.life_stage for agent in agent.jotr_agents]
 
-            has_breeders = any([a.life_stage == "breeding" for a in agent.jotr_agents])
-            if has_breeders:
-                return 0, 255, 0, 1
+        if len(patch_life_stages) > 0:
 
-            has_adults = any([a.life_stage == "adult" for a in agent.jotr_agents])
-            if has_adults:
-                return 0, 200, 0, 1
+            max_stage = max(patch_life_stages)
+            rgba = LIFE_STAGE_RGB_VIZ_MAP[max_stage]
 
-            has_juveniles = any([a.life_stage == "juvenile" for a in agent.jotr_agents])
-            if has_juveniles:
-                return 0, 150, 0, 1
+        # if len(agent.jotr_agents) > 0:
+        #     only_dead = all([a.life_stage == "dead" for a in agent.jotr_agents])
+        #     if only_dead:
+        #         return 100, 0, 0, 1
 
-            has_seedlings = any([a.life_stage == "seedling" for a in agent.jotr_agents])
-            if has_seedlings:
-                return 0, 100, 0, 1
+        #     has_breeders = any([a.life_stage == "breeding" for a in agent.jotr_agents])
+        #     if has_breeders:
+        #         return 0, 255, 0, 1
 
-            has_seeds = any([a.life_stage == "seed" for a in agent.jotr_agents])
-            if has_seeds:
-                return 0, 50, 0, 1
+        #     has_adults = any([a.life_stage == "adult" for a in agent.jotr_agents])
+        #     if has_adults:
+        #         return 0, 200, 0, 1
+
+        #     has_juveniles = any([a.life_stage == "juvenile" for a in agent.jotr_agents])
+        #     if has_juveniles:
+        #         return 0, 150, 0, 1
+
+        #     has_seedlings = any([a.life_stage == "seedling" for a in agent.jotr_agents])
+        #     if has_seedlings:
+        #         return 0, 100, 0, 1
+
+        #     has_seeds = any([a.life_stage == "seed" for a in agent.jotr_agents])
+        #     if has_seeds:
+        #         return 0, 50, 0, 1
 
         else:
 
@@ -76,12 +84,15 @@ def cell_portrayal(agent):
                 debug_normalized_elevation,
                 1,
             )
+
         return rgba
 
     if isinstance(agent, JoshuaTreeAgent):
 
         # For now, we don't want to show individual agents on the map,
         # but we get an error if we don't return something
+        if agent.parent_id is not None:
+            pass
 
         portrayal = {}
         portrayal["shape"] = "circle"

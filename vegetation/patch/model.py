@@ -7,6 +7,7 @@ import json
 from scipy.stats import poisson
 from pyproj import Transformer
 
+from config.stages import LifeStage
 from patch.space import StudyArea
 from config.transitions import (
     JOTR_JUVENILE_AGE,
@@ -23,7 +24,7 @@ JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs 
 
 
 class JoshuaTreeAgent(mg.GeoAgent):
-    def __init__(self, model, geometry, crs, age=None):
+    def __init__(self, model, geometry, crs, age=None, parent_id=None):
         super().__init__(
             model=model,
             geometry=geometry,
@@ -31,10 +32,8 @@ class JoshuaTreeAgent(mg.GeoAgent):
         )
 
         self.age = age
+        self.parent_id = parent_id
         self.life_stage = None
-
-        pos = (np.float64(geometry.x), np.float64(geometry.y))
-        self._pos = pos
 
         # TODO: When we create the agent, we need to know its own indices relative
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/6
@@ -48,7 +47,19 @@ class JoshuaTreeAgent(mg.GeoAgent):
             np.float64(geometry.y),
         )
 
+        # According to wang-boyu, mesa-geo maintainer:
+        # pos = (x, y), with an origin at the lower left corner of the raster grid
+        # indices = (row, col) format with an origin at the upper left corner of the raster grid
+        # See https://github.com/projectmesa/mesa-geo/issues/267
+
+        # pos = (np.float64(geometry.x), np.float64(geometry.y))
+        # self._pos = pos
+
         self.indices = (int(self.float_indices[0]), int(self.float_indices[1]))
+        self._pos = (
+            self.indices[0],
+            self.model.space.raster_layer.height - self.indices[1],
+        )
 
         # TODO: Figure out how to set the life stage on init
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/3
@@ -62,7 +73,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
     def step(self):
 
         # Check if agent is dead - if yes, skip
-        if self.life_stage == "dead":
+        if self.life_stage == LifeStage.DEAD:
             return
 
         # Find the underlying cell - it must exist, else raise an error
@@ -74,7 +85,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             raise ValueError("No intersecting cell found")
 
         # If seed, get emergence rate, if not, get survival rate
-        if self.life_stage == "seed":
+        if self.life_stage == LifeStage.SEED:
             survival_rate = get_jotr_emergence_rate(intersecting_cell.aridity)
         else:
             survival_rate = get_jotr_survival_rate(
@@ -106,7 +117,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         intersecting_cell.update_occupancy(self)
 
         # Disperse
-        if self.life_stage == "breeding":
+        if self.life_stage == LifeStage.BREEDING:
             jotr_breeding_poisson_lambda = get_jotr_breeding_poisson_lambda(
                 intersecting_cell.aridity
             )
@@ -115,27 +126,27 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def _update_life_stage(self):
 
-        if self.life_stage == "dead":
+        if self.life_stage == LifeStage.DEAD:
             return
 
         age = self.age if self.age else 0
         if age == 0:
-            life_stage = "seed"
+            life_stage = LifeStage.SEED
         elif age > 1 and age <= JOTR_JUVENILE_AGE:
-            life_stage = "seedling"
+            life_stage = LifeStage.SEEDLING
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
-            life_stage = "juvenile"
+            life_stage = LifeStage.JUVENILE
         elif age > JOTR_ADULT_AGE and age < JOTR_REPRODUCTIVE_AGE:
-            life_stage = "adult"
+            life_stage = LifeStage.ADULT
         else:
-            life_stage = "breeding"
+            life_stage = LifeStage.BREEDING
         self.life_stage = life_stage
 
     def disperse_seeds(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
     ):
 
-        if self.life_stage != "breeding":
+        if self.life_stage != LifeStage.BREEDING:
             raise ValueError(
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
@@ -174,6 +185,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 geometry=Point(seed_x_wgs84, seed_y_wgs84),
                 crs=self.crs,
                 age=0,
+                parent_id=self.unique_id,
             )
             seed_agent._update_life_stage()
 
@@ -241,11 +253,11 @@ class Vegetation(mesa.Model):
         count_dict = (
             self.agents.select(agent_type=JoshuaTreeAgent).groupby("life_stage").count()
         )
-        self.n_seeds = count_dict.get("seed", 0)
-        self.n_seedlings = count_dict.get("seedling", 0)
-        self.n_juveniles = count_dict.get("juvenile", 0)
-        self.n_adults = count_dict.get("adult", 0)
-        self.n_breeding = count_dict.get("breeding", 0)
+        self.n_seeds = count_dict.get(LifeStage.SEED, 0)
+        self.n_seedlings = count_dict.get(LifeStage.SEEDLING, 0)
+        self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
+        self.n_adults = count_dict.get(LifeStage.ADULT, 0)
+        self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
 
     def step(self):
         self.agents.shuffle_do("step")

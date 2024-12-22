@@ -1,3 +1,5 @@
+from config.stages import LifeStage
+
 JOTR_JUVENILE_AGE = 8
 JOTR_ADULT_AGE = 15
 JOTR_REPRODUCTIVE_AGE = 30
@@ -15,13 +17,13 @@ def get_jotr_emergence_rate(aridity):
 
 
 def get_jotr_survival_rate(life_stage, aridity, nurse_indicator):
-    if life_stage == "seedling":
+    if life_stage == LifeStage.SEEDLING:
         rate = 0.55
-    if life_stage == "juvenile":
+    if life_stage == LifeStage.JUVENILE:
         rate = 0.8
-    if life_stage == "adult":
+    if life_stage == LifeStage.ADULT:
         rate = 0.99
-    if life_stage == "breeding":
+    if life_stage == LifeStage.BREEDING:
         rate = 0.97
 
     rate = rate - (aridity / 100_000)
