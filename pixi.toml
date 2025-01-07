@@ -31,6 +31,7 @@ sqlite = "*"
 pip = "*"
 
 [target.linux-64.pypi-dependencies]
-mesa = { version = "==3.1.0" }
-mesa-geo = { version = "==0.9.0a1" }
+mesa = { version = "==3.1.1" }
+mesa-geo = { version = "==0.9.0" }
+networkx = { version = "==3.1" }
 solara = "*"

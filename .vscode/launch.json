@@ -10,7 +10,7 @@
       "args": ["run", "app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
-      "pythonPath": "/opt/conda/bin/python"
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
     }
   ]
 }

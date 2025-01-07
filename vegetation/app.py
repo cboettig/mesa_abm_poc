@@ -3,7 +3,7 @@ import pstats
 from typing import Tuple
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
-from mesa_geo.visualization.components.geospace_leaflet import make_geospace_leaflet
+from mesa_geo.visualization import make_geospace_component
 from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
@@ -110,7 +110,7 @@ page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        make_geospace_leaflet(cell_portrayal, zoom=14),
+        make_geospace_component(cell_portrayal, zoom=14),
         make_plot_component(
             [
                 "Mean Age",
