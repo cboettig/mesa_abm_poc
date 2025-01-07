@@ -12,7 +12,7 @@ COPY pixi.toml pixi.toml
 COPY pixi.lock pixi.lock
 
 # Install pixi dependencies
-RUN pixi install -e mesa
+RUN pixi install
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
 COPY vegetation vegetation
