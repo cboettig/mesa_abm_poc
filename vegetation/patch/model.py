@@ -21,7 +21,7 @@ from config.transitions import (
 from config.paths import INITIAL_AGENTS_PATH
 
 JOTR_UTM_PROJ = "+proj=utm +zone=11 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +north"
-
+STD_INDENT = "    "
 
 class JoshuaTreeAgent(mg.GeoAgent):
     def __init__(self, model, geometry, crs, age=None, parent_id=None):
@@ -72,6 +72,9 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
     def step(self):
 
+        # Save initial life stage for logging
+        initial_life_stage = self.life_stage
+
         # Check if agent is dead - if yes, skip
         if self.life_stage == LifeStage.DEAD:
             return
@@ -99,19 +102,25 @@ class JoshuaTreeAgent(mg.GeoAgent):
 
         # Check survival, comparing dice roll to survival rate
         if dice_roll_zero_to_one < survival_rate:
-            outcome_str = "survived."
+            print(
+                f"{STD_INDENT*1}💪 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) survived! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            )
 
         else:
-            outcome_str = "died!"
-            self.life_stage = "dead"
+            print(
+                f"{STD_INDENT*1}💀 Agent {self.unique_id} ({self.life_stage.name}, age {self.age}) died! (dice roll {dice_roll_zero_to_one:.2f} w/ survival prob {survival_rate:.2f})"
+            )
+            self.life_stage = LifeStage.DEAD
 
-        print(
-            f"Agent {self.unique_id} {outcome_str} (dice roll {dice_roll_zero_to_one} with a survival probability of {survival_rate})"
-        )
 
         # Increment age
         self.age += 1
-        self._update_life_stage()
+        life_stage_promotion = self._update_life_stage()
+
+        if life_stage_promotion:
+            print(
+                f"{STD_INDENT*2}🔄 Agent {self.unique_id} ({initial_life_stage.name}) promoted to {self.life_stage.name}!"
+            )
 
         # Update underlying patch
         intersecting_cell.update_occupancy(self)
@@ -122,9 +131,12 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 intersecting_cell.aridity
             )
             n_seeds = poisson.rvs(jotr_breeding_poisson_lambda)
+
             self.disperse_seeds(n_seeds)
 
     def _update_life_stage(self):
+
+        initial_life_stage = self.life_stage
 
         if self.life_stage == LifeStage.DEAD:
             return
@@ -132,7 +144,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
         age = self.age if self.age else 0
         if age == 0:
             life_stage = LifeStage.SEED
-        elif age > 1 and age <= JOTR_JUVENILE_AGE:
+        elif age > 0 and age <= JOTR_JUVENILE_AGE:
             life_stage = LifeStage.SEEDLING
         elif age >= JOTR_JUVENILE_AGE and age <= JOTR_ADULT_AGE:
             life_stage = LifeStage.JUVENILE
@@ -141,6 +153,11 @@ class JoshuaTreeAgent(mg.GeoAgent):
         else:
             life_stage = LifeStage.BREEDING
         self.life_stage = life_stage
+
+        if initial_life_stage != self.life_stage:
+            return True
+        else:
+            return False
 
     def disperse_seeds(
         self, n_seeds, max_dispersal_distance=JOTR_SEED_DISPERSAL_DISTANCE
@@ -151,7 +168,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
                 f"Agent {self.unique_id} is not breeding and cannot disperse seeds"
             )
 
-        print(f"Agent {self.unique_id} is dispersing {n_seeds} seeds")
+        print(f"{STD_INDENT*2}🌰 Agent {self.unique_id} ({self.life_stage.name}) is dispersing {n_seeds} seeds...")
 
         # TODO: Use the best projection for valid seed dispersal
         # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/12
@@ -195,7 +212,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             delta_y_index = self.indices[1] - seed_agent.indices[1]
 
             print(
-                f"Agent {self.unique_id} dispersed a seed to {seed_agent._pos} (delta index: {delta_x_index}, {delta_y_index})"
+                f"{STD_INDENT*3}➕ Seed ({seed_agent.unique_id}, lifestage {seed_agent.life_stage}) to {seed_agent._pos} (🔺index: {delta_x_index}, {delta_y_index})"
             )
 
 
@@ -260,7 +277,20 @@ class Vegetation(mesa.Model):
         self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
 
     def step(self):
+        # Print timestep header
+        timestep_str = f"# {STD_INDENT*0}🕰️ Time passes. It is the year {self.steps} #"
+        nchar_timestep_str = len(timestep_str)
+        print("#" * (nchar_timestep_str - 1))
+        print(timestep_str)
+        print("#" * (nchar_timestep_str - 1))
+        print("\n")
+
+        # Step agents
         self.agents.shuffle_do("step")
         self.update_metrics()
 
+        # Print end of timestep summary (just padding)
+        print("\n")
+
+        # Collect data
         self.datacollector.collect(self)

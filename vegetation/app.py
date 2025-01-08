@@ -50,30 +50,6 @@ def cell_portrayal(agent):
             max_stage = max(patch_life_stages)
             rgba = LIFE_STAGE_RGB_VIZ_MAP[max_stage]
 
-        # if len(agent.jotr_agents) > 0:
-        #     only_dead = all([a.life_stage == "dead" for a in agent.jotr_agents])
-        #     if only_dead:
-        #         return 100, 0, 0, 1
-
-        #     has_breeders = any([a.life_stage == "breeding" for a in agent.jotr_agents])
-        #     if has_breeders:
-        #         return 0, 255, 0, 1
-
-        #     has_adults = any([a.life_stage == "adult" for a in agent.jotr_agents])
-        #     if has_adults:
-        #         return 0, 200, 0, 1
-
-        #     has_juveniles = any([a.life_stage == "juvenile" for a in agent.jotr_agents])
-        #     if has_juveniles:
-        #         return 0, 150, 0, 1
-
-        #     has_seedlings = any([a.life_stage == "seedling" for a in agent.jotr_agents])
-        #     if has_seedlings:
-        #         return 0, 100, 0, 1
-
-        #     has_seeds = any([a.life_stage == "seed" for a in agent.jotr_agents])
-        #     if has_seeds:
-        #         return 0, 50, 0, 1
 
         else:
 
@@ -91,14 +67,18 @@ def cell_portrayal(agent):
 
         # For now, we don't want to show individual agents on the map,
         # but we get an error if we don't return something
-        if agent.parent_id is not None:
-            pass
+        # if agent.parent_id is not None:
+        #     pass
 
         portrayal = {}
         portrayal["shape"] = "circle"
-        portrayal["r"] = 2
-        portrayal["color"] = "green"
+        portrayal["color"] = "red"
         portrayal["opacity"] = 0.0
+        portrayal["fillOpacity"] = 0.0
+        portrayal["stroke"] = False
+        portrayal["radius"] = 0
+
+        portrayal["description"] = f"Agent ID: {agent.unique_id}"
 
         return portrayal
 
