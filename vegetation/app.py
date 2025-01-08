@@ -52,7 +52,7 @@ def cell_portrayal(agent):
 
 
         else:
-            if not agent.refugia:
+            if not agent.refugia_status:
                 debug_normalized_elevation = int((agent.elevation / 5000) * 255)
                 rgba = (
                     debug_normalized_elevation,
@@ -65,11 +65,6 @@ def cell_portrayal(agent):
         return rgba
 
     if isinstance(agent, JoshuaTreeAgent):
-
-        # For now, we don't want to show individual agents on the map,
-        # but we get an error if we don't return something
-        # if agent.parent_id is not None:
-        #     pass
 
         portrayal = {}
         portrayal["shape"] = "circle"
@@ -102,6 +97,9 @@ page = SolaraViz(
                 "N Adults",
                 "N Breeding",
             ],
+        ),
+        make_plot_component(
+            ["% Refugia Cells Occupied"],
         ),
     ],
     model_params=model_params,

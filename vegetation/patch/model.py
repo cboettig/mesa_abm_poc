@@ -8,7 +8,7 @@ from scipy.stats import poisson
 from pyproj import Transformer
 
 from config.stages import LifeStage
-from patch.space import StudyArea
+from patch.space import StudyArea, VegCell
 from config.transitions import (
     JOTR_JUVENILE_AGE,
     JOTR_REPRODUCTIVE_AGE,
@@ -254,6 +254,7 @@ class Vegetation(mesa.Model):
                 "N Juveniles": "n_juveniles",
                 "N Adults": "n_adults",
                 "N Breeding": "n_breeding",
+                "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
 
@@ -276,6 +277,15 @@ class Vegetation(mesa.Model):
         self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
         self.n_adults = count_dict.get(LifeStage.ADULT, 0)
         self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
+
+        # Number of refugia cells occupied by JoshuaTreeAgents
+        count_dict = (
+            self.agents.select(agent_type=VegCell) \
+                .select(filter_func = lambda agent: agent.refugia_status) \
+                .groupby("occupied_by_jotr_agents") \
+                .count()
+        )
+        self.pct_refugia_cells_occupied = count_dict.get(True, 0) / (count_dict.get(True, 0) + count_dict.get(False, 0))
 
     def step(self):
         # Print timestep header

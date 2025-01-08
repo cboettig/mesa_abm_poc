@@ -23,7 +23,7 @@ SAVE_LOCAL_STAC_CACHE = True
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
-    refugia: bool = False
+    refugia_status: bool = False
 
     def __init__(
         self,
@@ -43,13 +43,18 @@ class VegCell(mg.Cell):
         # and thus I can't use the various geometry based intersection methods to find agents. My guess
         # is that this will either not work or be very slow, but itll get us started
         self.jotr_agents = []
+        self.occupied_by_jotr_agents = False
 
     def step(self):
+        # Right now, this cell is being updated by the JOTR agent step, but it probably shouldn't be
+        # self.update_occupancy()
         pass
+
 
     def update_occupancy(self, jotr_agent):
         if jotr_agent.life_stage and jotr_agent not in self.jotr_agents:
             self.jotr_agents.append(jotr_agent)
+            self.occupied_by_jotr_agents = True if len(self.jotr_agents) > 0 else False
 
 
 class StudyArea(mg.GeoSpace):
@@ -149,7 +154,7 @@ class StudyArea(mg.GeoSpace):
 
         self.raster_layer.apply_raster(
             data=refugia,
-            attr_name="refugia",
+            attr_name="refugia_status",
         )
         super().add_layer(self.raster_layer)
 

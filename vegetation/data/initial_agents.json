@@ -50,6 +50,16 @@
         "coordinates": [-116.32278318831908, 33.987989849343265],
         "type": "Point"
       }
+    },
+        {
+      "type": "Feature",
+      "properties": {
+        "age": 25
+      },
+      "geometry": {
+        "coordinates": [-116.29278318831908, 33.9857989849343265],
+        "type": "Point"
+      }
     }
   ]
 }
