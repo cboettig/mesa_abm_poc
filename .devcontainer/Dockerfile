@@ -1,18 +1,21 @@
-# First, grab a Unix image with Python / Conda installed
-FROM condaforge/miniforge3
+# First, grab a Unix image with pixi installed
+FROM ghcr.io/prefix-dev/pixi:0.18.0
 
 # Copy over install scripts - this is a good way to keep the Dockerfile clean and readable
 COPY .devcontainer/scripts .devcontainer/scripts
 
-# Install git and ssh (note that you could also put this in a .sh for better readability)
+# Install git, ssh
 RUN .devcontainer/scripts/install_git_and_ssh.sh
 
-# Then, copy the .devcontainer contents of the repo into the image - note we do this later so that we can avoid re-installing sys dependencies if the python deps change
-COPY .devcontainer/python_environment.yml .devcontainer/python_environment.yml
-RUN conda env create -f .devcontainer/python_environment.yml
+# Copy over pixi toml and pyproject.toml
+COPY pixi.toml pixi.toml
+COPY pixi.lock pixi.lock
+
+# Install pixi dependencies
+RUN pixi install
 
 # Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
-COPY rainfall rainfall
+COPY vegetation vegetation
 
 # Finally, keep the container running so that we can attach to it
 CMD tail -f /dev/null

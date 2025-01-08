@@ -5,7 +5,13 @@
     "context": "../"
   },
   "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind" // SSH keys
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind", // SSH keys
+    "source=/local_dev_data,target=/local_dev_data,type=bind" // Local development cache
   ],
-  "extensions": ["ms-python.flake8", "ms-python.python", "ms-python.debugpy"]
+  "extensions": [
+    "ms-python.flake8",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.black-formatter"
+  ]
 }

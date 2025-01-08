@@ -5,12 +5,12 @@
       "name": "Solara: Launch",
       "type": "debugpy",
       "request": "launch",
-      "cwd": "${workspaceFolder}/rainfall",
+      "cwd": "${workspaceFolder}/vegetation",
       "module": "solara",
       "args": ["run", "app.py"],
       "console": "integratedTerminal",
       "justMyCode": false,
-      "pythonPath": "/opt/conda/envs/mesa/bin/python"
+      "pythonPath": "/workspaces/mesa_abm_poc/.pixi/envs/default/bin/python"
     }
   ]
 }
