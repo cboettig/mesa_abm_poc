@@ -23,6 +23,7 @@ SAVE_LOCAL_STAC_CACHE = True
 class VegCell(mg.Cell):
     elevation: int | None
     aridity: int | None
+    refugia: bool = False
 
     def __init__(
         self,
@@ -138,6 +139,17 @@ class StudyArea(mg.GeoSpace):
         self.raster_layer.apply_raster(
             data=inverse_elevation,
             attr_name="aridity",
+        )
+        super().add_layer(self.raster_layer)
+
+    def get_refugia_status(self):
+        elevation_array = self.raster_layer.get_raster("elevation")
+        ninetyfive_percentile = np.percentile(elevation_array, 95)
+        refugia = elevation_array > ninetyfive_percentile
+
+        self.raster_layer.apply_raster(
+            data=refugia,
+            attr_name="refugia",
         )
         super().add_layer(self.raster_layer)
 

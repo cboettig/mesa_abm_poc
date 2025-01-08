@@ -52,15 +52,16 @@ def cell_portrayal(agent):
 
 
         else:
-
-            debug_normalized_elevation = int((agent.elevation / 5000) * 255)
-            rgba = (
-                debug_normalized_elevation,
-                debug_normalized_elevation,
-                debug_normalized_elevation,
-                1,
-            )
-
+            if not agent.refugia:
+                debug_normalized_elevation = int((agent.elevation / 5000) * 255)
+                rgba = (
+                    debug_normalized_elevation,
+                    debug_normalized_elevation,
+                    debug_normalized_elevation,
+                    .25,
+                )
+            else:
+                rgba = (0, 255, 0, 1)
         return rgba
 
     if isinstance(agent, JoshuaTreeAgent):

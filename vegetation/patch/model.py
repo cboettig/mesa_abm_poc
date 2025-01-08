@@ -227,6 +227,7 @@ class Vegetation(mesa.Model):
 
         self.space.get_elevation()
         self.space.get_aridity()
+        self.space.get_refugia_status()
 
         with open(INITIAL_AGENTS_PATH, "r") as f:
             initial_agents_geojson = json.loads(f.read())
