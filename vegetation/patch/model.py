@@ -123,7 +123,7 @@ class JoshuaTreeAgent(mg.GeoAgent):
             )
 
         # Update underlying patch
-        intersecting_cell.update_occupancy(self)
+        intersecting_cell.add_agent_link(self)
 
         # Disperse
         if self.life_stage == LifeStage.BREEDING:
@@ -264,10 +264,6 @@ class Vegetation(mesa.Model):
         mean_age = self.agents.select(agent_type=JoshuaTreeAgent).agg("age", np.mean)
         self.mean_age = mean_age
 
-        # Number of agents (JoshuaTreeAgent)
-        n_agents = len(self.agents.select(agent_type=JoshuaTreeAgent))
-        self.n_agents = n_agents
-
         # Number of agents by life stage
         count_dict = (
             self.agents.select(agent_type=JoshuaTreeAgent).groupby("life_stage").count()
@@ -277,6 +273,11 @@ class Vegetation(mesa.Model):
         self.n_juveniles = count_dict.get(LifeStage.JUVENILE, 0)
         self.n_adults = count_dict.get(LifeStage.ADULT, 0)
         self.n_breeding = count_dict.get(LifeStage.BREEDING, 0)
+        self.n_dead = count_dict.get(LifeStage.DEAD, 0)
+
+        # Number of agents (JoshuaTreeAgent)
+        n_agents = len(self.agents.select(agent_type=JoshuaTreeAgent))
+        self.n_agents = n_agents - self.n_dead
 
         # Number of refugia cells occupied by JoshuaTreeAgents
         count_dict = (
@@ -289,7 +290,7 @@ class Vegetation(mesa.Model):
 
     def step(self):
         # Print timestep header
-        timestep_str = f"# {STD_INDENT*0}🕰️ Time passes. It is the year {self.steps} #"
+        timestep_str = f"# {STD_INDENT*0}🕰️  Time passes. It is the year {self.steps}. #"
         nchar_timestep_str = len(timestep_str)
         print("#" * (nchar_timestep_str - 1))
         print(timestep_str)
