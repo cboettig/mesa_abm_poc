@@ -182,6 +182,7 @@ class StudyArea(mg.GeoSpace):
         )
 
         # TODO: It seems weird that we have duplicate time dimension, it seems like
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/15
         # stackstac should automatically ignore the `id` dimension which is just
         # is contains the cog name, which doesn't really matter to us. This check
         # ensures that there aren't overlap issues where we introduce some kind of
