@@ -25,3 +25,7 @@ Alternatively, the simulation can be run the same way (without debugging) via th
 ```bash
 solara run app.py
 ```
+
+## Known Issues
+
+- For some weird reason, after adding interactivity, the solara app only runs after being reloaded after initial build. This can be triggered by saving any file within the repo, and things seem to work fine after that - you can even make source edits and re-run, which is a nice workflow. Weird!

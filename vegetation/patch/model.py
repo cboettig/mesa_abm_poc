@@ -232,18 +232,7 @@ class Vegetation(mesa.Model):
         with open(INITIAL_AGENTS_PATH, "r") as f:
             initial_agents_geojson = json.loads(f.read())
 
-        agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(
-            initial_agents_geojson
-        )
-
-        # TODO: Find a way to update life stage on init
-        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/9
-        # Since .from_GeoJSON() sets attributes after init, we call
-        # _update_life_stage after init, but before we add to the grid
-        self.agents.select(agent_type=JoshuaTreeAgent).do("_update_life_stage")
-
-        self.space.add_agents(agents)
-        self.update_metrics()
+        self._add_agents_from_geojson(initial_agents_geojson)
 
         self.datacollector = mesa.DataCollector(
             {
@@ -257,6 +246,30 @@ class Vegetation(mesa.Model):
                 "% Refugia Cells Occupied": "pct_refugia_cells_occupied",
             }
         )
+
+    def _add_agents_from_geojson(self, agents_geojson):
+        agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(
+            agents_geojson
+        )
+
+        # TODO: Find a way to update life stage on init
+        # Issue URL: https://github.com/SchmidtDSE/mesa_abm_poc/issues/9
+        # Since .from_GeoJSON() sets attributes after init, we call
+        # _update_life_stage after init, but before we add to the grid
+        self.agents.select(agent_type=JoshuaTreeAgent).do("_update_life_stage")
+
+        self.space.add_agents(agents)
+        self.update_metrics()
+
+    # def add_agents_from_management_draw(event, geo_json, action):
+    def add_agents_from_management_draw(*args, **kwargs):
+        
+        assert kwargs.get("action") == "create"
+        management_area = kwargs.get('geo_json')
+
+        # Use geojson to creates agents within polygon area
+        # agents = mg.AgentCreator(JoshuaTreeAgent, model=self).from_GeoJSON(geojson)
+        # self.space.add_agents(agents)
 
     # @property
     def update_metrics(self):

@@ -1,11 +1,13 @@
 import cProfile
 import pstats
 from typing import Tuple
+from ipyleaflet.leaflet import GeomanDrawControl
 
 from mesa.visualization import Slider, SolaraViz, make_plot_component
 from mesa_geo.visualization import make_geospace_component
 from patch.model import Vegetation, JoshuaTreeAgent
 from patch.space import VegCell
+# from patch.management import init_tree_management_control
 from config.stages import LIFE_STAGE_RGB_VIZ_MAP
 
 # Very big bounds for western JOTR
@@ -81,12 +83,20 @@ def cell_portrayal(agent):
 
 model = Vegetation(bounds=TST_JOTR_BOUNDS)
 
+tree_management = GeomanDrawControl(
+    drag=False,
+    cut=False,
+    rotate=False,
+    polyline={},
+    circlemarker={}
+)
+tree_management.on_draw(model.add_agents_from_management_draw)
 
 page = SolaraViz(
     model,
     name="Veg Model",
     components=[
-        make_geospace_component(cell_portrayal, zoom=14),
+        make_geospace_component(cell_portrayal, zoom=14, controls = [tree_management]),
         make_plot_component(
             [
                 "Mean Age",
