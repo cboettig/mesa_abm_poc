@@ -16,6 +16,7 @@ USER $NB_USER
 
 # codeserver extensions
 RUN echo "ms-python.python ms-toolsai.jupyter continue.continue" | xargs -n 1 code-server --install-extension
+RUN mamba install jupyter-vscode-proxy
 
 # Install pixi
 RUN curl -fsSL https://pixi.sh/install.sh | bash
