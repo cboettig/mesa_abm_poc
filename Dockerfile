@@ -28,9 +28,6 @@ RUN curl -fsSL https://pixi.sh/install.sh | bash
 # Copy over install scripts - this is a good way to keep the Dockerfile clean and readable
 COPY .devcontainer/scripts .devcontainer/scripts
 
-# Install git, ssh
-RUN .devcontainer/scripts/install_git_and_ssh.sh
-
 # Copy over pixi toml and pyproject.toml
 COPY pixi.toml pixi.toml
 COPY pixi.lock pixi.lock
