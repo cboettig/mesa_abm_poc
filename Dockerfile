@@ -21,21 +21,9 @@ RUN mamba install jupyter-vscode-proxy
 # Install pixi
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 
-
-
-
-
-###############
-
-# Copy over install scripts - this is a good way to keep the Dockerfile clean and readable
-COPY .devcontainer/scripts .devcontainer/scripts
-
 # Copy over pixi toml and pyproject.toml
 COPY pixi.toml pixi.toml
 COPY pixi.lock pixi.lock
 
 # Install pixi dependencies
 RUN pixi install
-
-# Now, copy python source code into the image - by doing this last, we can avoid re-installing ALL dependencies if just the source code changes
-COPY vegetation vegetation
