@@ -1,6 +1,5 @@
 FROM quay.io/jupyter/minimal-notebook
 
-
 # Create a user-writable space outside $HOME for apps to live.
 ENV XDG_DATA_HOME=/opt/share
 ENV PIXI_HOME $XDG_DATA_HOME/pixi
